@@ -106,7 +106,7 @@
                 <label>Vehicle</label>
                 <select v-model="form.vehicle" class="form-control" required>
                   <option value="">Select Vehicle</option>
-                  <option v-for="v in vehicles" :key="v.name" :value="v.name">
+                  <option v-for="v in availableVehicles" :key="v.name" :value="v.name">
                     {{ v.name }} - {{ v.vehicle_name }} ({{ v.max_load_capacity }} kg)
                   </option>
                 </select>
@@ -115,7 +115,7 @@
                 <label>Driver</label>
                 <select v-model="form.driver" class="form-control" required>
                   <option value="">Select Driver</option>
-                  <option v-for="d in drivers" :key="d.name" :value="d.name">
+                  <option v-for="d in availableDrivers" :key="d.name" :value="d.name">
                     {{ d.driver_name }} ({{ d.status }})
                   </option>
                 </select>
@@ -140,7 +140,7 @@
             
             <div class="modal-footer-form">
               <button type="button" class="btn btn-secondary" @click="closeModal">Cancel</button>
-              <button type="submit" class="btn btn-primary">Save Trip</button>
+              <button type="submit" class="btn btn-primary" :disabled="!!cargoWarning">Save Trip</button>
             </div>
           </form>
         </div>
@@ -255,6 +255,33 @@ export default {
     }
   },
   computed: {
+    availableVehicles() {
+      return this.vehicles.filter(v => {
+        const isAssigned = v.name === this.form.vehicle;
+        const isAvailable = v.status === "Available";
+        return isAssigned || isAvailable;
+      })
+    },
+    availableDrivers() {
+      return this.drivers.filter(d => {
+        const isAssigned = d.name === this.form.driver;
+        const isAvailable = d.status === "Available";
+        const isNotExpired = !d.license_expiry_date || new Date(d.license_expiry_date) >= new Date();
+        return isAssigned || (isAvailable && isNotExpired);
+      })
+    },
+    selectedVehicleObj() {
+      if (!this.form.vehicle) return null
+      return this.vehicles.find(v => v.name === this.form.vehicle)
+    },
+    cargoWarning() {
+      const v = this.selectedVehicleObj
+      if (v && v.max_load_capacity && this.form.cargo_weight > v.max_load_capacity) {
+        const diff = this.form.cargo_weight - v.max_load_capacity
+        return `Vehicle Capacity: ${v.max_load_capacity} kg | Cargo Weight: ${this.form.cargo_weight} kg | Capacity exceeded by ${diff} kg - dispatch blocked.`
+      }
+      return ""
+    },
     canCreateTrips() {
       const roles = this.user.roles || []
       return roles.includes('Fleet Manager') || roles.includes('System Manager')
@@ -270,6 +297,13 @@ export default {
     this.fetchDrivers()
   },
   methods: {
+    isDispatchDisabled(trip) {
+      const v = this.vehicles.find(veh => veh.name === trip.vehicle)
+      if (v && v.max_load_capacity && trip.cargo_weight > v.max_load_capacity) {
+        return true
+      }
+      return false
+    },
     async fetchTrips() {
       try {
         const response = await fetch('/api/resource/Trip?fields=["*"]&limit_page_length=100&order_by=creation desc')
@@ -283,9 +317,7 @@ export default {
     },
     async fetchVehicles() {
       try {
-        const fields = encodeURIComponent(JSON.stringify(['name', 'vehicle_name', 'status', 'max_load_capacity']))
-        const filters = encodeURIComponent(JSON.stringify([['status', '=', 'Available']]))
-        const response = await fetch(`/api/resource/Vehicle?fields=${fields}&filters=${filters}&limit_page_length=200`)
+        const response = await fetch('/api/resource/Vehicle?fields=["name","vehicle_name","status","max_load_capacity"]&limit_page_length=200')
         if (response.ok) {
           const res = await response.json()
           this.vehicles = res.data || []
@@ -296,9 +328,7 @@ export default {
     },
     async fetchDrivers() {
       try {
-        const fields = encodeURIComponent(JSON.stringify(['name', 'driver_name', 'status']))
-        const filters = encodeURIComponent(JSON.stringify([['status', '=', 'Available']]))
-        const response = await fetch(`/api/resource/Driver?fields=${fields}&filters=${filters}&limit_page_length=200`)
+        const response = await fetch('/api/resource/Driver?fields=["name","driver_name","status","license_expiry_date"]&limit_page_length=200')
         if (response.ok) {
           const res = await response.json()
           this.drivers = res.data || []

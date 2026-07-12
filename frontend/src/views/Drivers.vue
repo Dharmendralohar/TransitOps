@@ -23,6 +23,7 @@
             <th>Category</th>
             <th>Expiry Date</th>
             <th>Contact</th>
+            <th>Trip Compl.</th>
             <th>Safety Score</th>
             <th>Status</th>
             <th>Linked User</th>
@@ -43,6 +44,9 @@
               </span>
             </td>
             <td>{{ formatContactNumber(driver.contact_number) }}</td>
+            <td>
+              <span class="badge badge-secondary font-semibold">{{ getCompletedTripsCount(driver.name) }}</span>
+            </td>
             <td>
               <div class="safety-score-container">
                 <span :class="['safety-score-badge', getSafetyScoreClass(driver.safety_score)]">
@@ -163,6 +167,7 @@ export default {
     return {
       drivers: [],
       systemUsers: [],
+      completedTrips: [],
       modalOpen: false,
       isEdit: false,
       errorMsg: '',
@@ -186,11 +191,26 @@ export default {
   },
   created() {
     this.fetchDrivers()
+    this.fetchCompletedTrips()
     if (this.canManageDrivers) {
       this.fetchUsers()
     }
   },
   methods: {
+    async fetchCompletedTrips() {
+      try {
+        const response = await fetch('/api/resource/Trip?fields=["driver","status"]&filters=[["status","=","Completed"]]&limit_page_length=500')
+        if (response.ok) {
+          const res = await response.json()
+          this.completedTrips = res.data || []
+        }
+      } catch (err) {
+        console.error('Error fetching completed trips:', err)
+      }
+    },
+    getCompletedTripsCount(driverName) {
+      return this.completedTrips.filter(t => t.driver === driverName).length
+    },
     async fetchDrivers() {
       try {
         const response = await fetch('/api/resource/Driver?fields=["*"]&limit_page_length=100')

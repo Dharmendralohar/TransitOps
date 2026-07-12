@@ -15,35 +15,35 @@
         </div>
 
         <nav class="sidebar-nav">
-          <router-link to="/" class="nav-item" active-class="active" @click="mobileOpen = false">
+          <router-link v-if="hasTabAccess('Dashboard')" to="/" class="nav-item" active-class="active" @click="mobileOpen = false">
             <span class="nav-icon">📊</span>
             <span class="nav-label">Dashboard</span>
           </router-link>
-          <router-link to="/vehicles" class="nav-item" active-class="active" @click="mobileOpen = false">
+          <router-link v-if="hasTabAccess('Vehicles')" to="/vehicles" class="nav-item" active-class="active" @click="mobileOpen = false">
             <span class="nav-icon">🚚</span>
             <span class="nav-label">Vehicles</span>
           </router-link>
-          <router-link to="/drivers" class="nav-item" active-class="active" @click="mobileOpen = false">
+          <router-link v-if="hasTabAccess('Drivers')" to="/drivers" class="nav-item" active-class="active" @click="mobileOpen = false">
             <span class="nav-icon">👤</span>
             <span class="nav-label">Drivers</span>
           </router-link>
-          <router-link to="/trips" class="nav-item" active-class="active" @click="mobileOpen = false">
+          <router-link v-if="hasTabAccess('Trips')" to="/trips" class="nav-item" active-class="active" @click="mobileOpen = false">
             <span class="nav-icon">🗺️</span>
             <span class="nav-label">Trips</span>
           </router-link>
-          <router-link to="/maintenance" class="nav-item" active-class="active" @click="mobileOpen = false">
+          <router-link v-if="hasTabAccess('Maintenance')" to="/maintenance" class="nav-item" active-class="active" @click="mobileOpen = false">
             <span class="nav-icon">🔧</span>
             <span class="nav-label">Maintenance</span>
           </router-link>
-          <router-link to="/expenses" class="nav-item" active-class="active" @click="mobileOpen = false">
+          <router-link v-if="hasTabAccess('Expenses')" to="/expenses" class="nav-item" active-class="active" @click="mobileOpen = false">
             <span class="nav-icon">💳</span>
             <span class="nav-label">Expenses &amp; Fuel</span>
           </router-link>
-          <router-link to="/reports" class="nav-item" active-class="active" @click="mobileOpen = false">
+          <router-link v-if="hasTabAccess('Analytics')" to="/reports" class="nav-item" active-class="active" @click="mobileOpen = false">
             <span class="nav-icon">📈</span>
             <span class="nav-label">Analytics</span>
           </router-link>
-          <router-link to="/settings" class="nav-item" active-class="active" @click="mobileOpen = false">
+          <router-link v-if="hasTabAccess('Settings')" to="/settings" class="nav-item" active-class="active" @click="mobileOpen = false">
             <span class="nav-icon">⚙️</span>
             <span class="nav-label">Settings</span>
           </router-link>
@@ -115,6 +115,37 @@ export default {
     this.fetchUser()
   },
   methods: {
+    hasTabAccess(tab) {
+      const roles = this.currentUser.roles || []
+      if (roles.includes("System Manager") || roles.includes("Administrator")) {
+        return true
+      }
+      if (tab === "Dashboard") {
+        return roles.includes("Fleet Manager") || roles.includes("Dispatcher") || roles.includes("Safety Officer") || roles.includes("Financial Analyst")
+      }
+      if (tab === "Vehicles") {
+        return roles.includes("Fleet Manager")
+      }
+      if (tab === "Drivers") {
+        return roles.includes("Safety Officer") || roles.includes("Fleet Manager")
+      }
+      if (tab === "Trips") {
+        return roles.includes("Dispatcher") || roles.includes("Fleet Manager")
+      }
+      if (tab === "Maintenance") {
+        return roles.includes("Fleet Manager")
+      }
+      if (tab === "Expenses") {
+        return roles.includes("Financial Analyst") || roles.includes("Fleet Manager")
+      }
+      if (tab === "Analytics") {
+        return roles.includes("Financial Analyst") || roles.includes("Fleet Manager")
+      }
+      if (tab === "Settings") {
+        return roles.includes("Fleet Manager") || roles.includes("Safety Officer")
+      }
+      return true
+    },
     async fetchUser() {
       try {
         const response = await fetch('/api/method/transitops.transitops.api.auth.get_current_user')
