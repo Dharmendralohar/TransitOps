@@ -284,8 +284,48 @@ export default {
     formatNumber(val) {
       return Math.round(val || 0).toLocaleString()
     },
-    exportPDF() {
-      window.print();
+    async exportPDF() {
+      this.loading = true;
+      try {
+        // Load html2pdf from CDN dynamically if not present
+        if (!window.html2pdf) {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+          });
+        }
+
+        // Hide filter bar and export button before capturing
+        const filterBar = document.querySelector('.filter-bar');
+        if (filterBar) filterBar.style.display = 'none';
+
+        const element = document.querySelector('.analytics-view');
+        const opt = {
+          margin:      8,
+          filename:    'transitops_analytics_report.pdf',
+          image:       { type: 'jpeg', quality: 0.98 },
+          html2canvas: { 
+            scale: 2, 
+            useCORS: true,
+            backgroundColor: '#0b0f19'
+          },
+          jsPDF:       { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        };
+
+        // Generate and download
+        await window.html2pdf().set(opt).from(element).save();
+
+        // Restore filter bar
+        if (filterBar) filterBar.style.display = 'flex';
+      } catch (err) {
+        console.error('PDF Download failed:', err);
+        this.errorMsg = 'Could not generate PDF. Please try again.';
+      } finally {
+        this.loading = false;
+      }
     }
   }
 }
