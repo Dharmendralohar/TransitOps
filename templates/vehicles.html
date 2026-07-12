@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Vehicles{% endblock %}
+{% block content %}
+<h2>Vehicle Management</h2>
+<table class="data-table">
+  <thead><tr><th>ID</th><th>Plate</th><th>Model</th><th>Actions</th></tr></thead>
+  <tbody>
+    {% for v in vehicles %}
+    <tr>
+      <td>{{ v.id }}</td>
+      <td>{{ v.plate }}</td>
+      <td>{{ v.model }}</td>
+      <td><a href="{{ url_for('vehicles_delete', vehicle_id=v.id) }}">Delete</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h3>Add New Vehicle</h3>
+<form method="post">
+  <label>Plate: <input type="text" name="plate" required></label><br>
+  <label>Model: <input type="text" name="model" required></label><br>
+  <button type="submit">Add Vehicle</button>
+</form>
+{% endblock %}

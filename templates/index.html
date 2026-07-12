@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<h1>Welcome to the New Demo Project</h1>
+<p>This is a simple static page generated as per your request.</p>
+<button id="demoBtn">Click Me</button>
+<a href="{{ url_for('logout') }}">Logout</a>
+{% endblock %}

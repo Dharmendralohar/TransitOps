@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Drivers{% endblock %}
+{% block content %}
+<h2>Driver Management</h2>
+<table class="data-table">
+  <thead><tr><th>ID</th><th>Name</th><th>License</th><th>Actions</th></tr></thead>
+  <tbody>
+    {% for d in drivers %}
+    <tr>
+      <td>{{ d.id }}</td>
+      <td>{{ d.name }}</td>
+      <td>{{ d.license }}</td>
+      <td><a href="{{ url_for('drivers_delete', driver_id=d.id) }}">Delete</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h3>Add New Driver</h3>
+<form method="post">
+  <label>Name: <input type="text" name="name" required></label><br>
+  <label>License #: <input type="text" name="license" required></label><br>
+  <button type="submit">Add Driver</button>
+</form>
+{% endblock %}
