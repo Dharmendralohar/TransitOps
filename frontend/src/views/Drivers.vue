@@ -42,7 +42,7 @@
                 <span v-if="isExpired(driver.license_expiry_date)" class="expired-label">(Expired)</span>
               </span>
             </td>
-            <td>{{ driver.contact_number }}</td>
+            <td>{{ formatContactNumber(driver.contact_number) }}</td>
             <td>
               <div class="safety-score-container">
                 <span :class="['safety-score-badge', getSafetyScoreClass(driver.safety_score)]">
@@ -110,7 +110,7 @@
             <div class="form-grid">
               <div class="form-group">
                 <label>Contact Number</label>
-                <input type="text" v-model="form.contact_number" class="form-control" required />
+                <input type="tel" v-model="form.contact_number" class="form-control" required placeholder="+919876543210" />
               </div>
               <div class="form-group">
                 <label>Safety Score (0 - 100)</label>
@@ -242,6 +242,7 @@ export default {
           ? `/api/resource/Driver/${encodeURIComponent(this.form.name)}`
           : '/api/resource/Driver'
         const method = this.isEdit ? 'PUT' : 'POST'
+        const payload = this.buildDriverPayload()
 
         const response = await fetch(url, {
           method: method,
@@ -249,7 +250,7 @@ export default {
             'Content-Type': 'application/json',
             'X-Frappe-CSRF-Token': window.csrf_token
           },
-          body: JSON.stringify(this.form)
+          body: JSON.stringify(payload)
         })
 
         if (response.ok) {
@@ -257,12 +258,46 @@ export default {
           this.fetchDrivers()
         } else {
           const res = await response.json()
-          this.errorMsg = res._server_messages 
-            ? JSON.parse(res._server_messages).map(m => JSON.parse(m).message).join(', ')
-            : 'Error while saving driver details.'
+          this.errorMsg = this.parseServerMessages(res) || res.exception || 'Error while saving driver details.'
         }
       } catch (err) {
         this.errorMsg = 'Failed to connect to server.'
+      }
+    },
+    buildDriverPayload() {
+      const payload = { ...this.form }
+      payload.contact_number = this.normalizeContactNumber(payload.contact_number)
+
+      if (!payload.user) {
+        delete payload.user
+      }
+
+      return payload
+    },
+    normalizeContactNumber(value) {
+      const contact = String(value || '').trim()
+      if (!contact) return contact
+      if (contact.startsWith('+')) return contact
+
+      const digits = contact.replace(/\D/g, '')
+      if (digits.length === 10) {
+        return `+91${digits}`
+      }
+      if (digits.length > 10) {
+        return `+${digits}`
+      }
+
+      return contact
+    },
+    parseServerMessages(response) {
+      if (!response._server_messages) return ''
+
+      try {
+        return JSON.parse(response._server_messages)
+          .map(message => JSON.parse(message).message)
+          .join(', ')
+      } catch (err) {
+        return ''
       }
     },
     async deleteDriver(driver) {
@@ -290,6 +325,17 @@ export default {
       if (!dateStr) return '-'
       const date = new Date(dateStr)
       return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+    },
+    formatContactNumber(value) {
+      const contact = String(value || '').trim()
+      if (!contact) return '-'
+
+      const digits = contact.replace(/\D/g, '')
+      if (digits.length === 12 && digits.startsWith('91')) {
+        return digits.slice(2)
+      }
+
+      return contact
     },
     isExpired(dateStr) {
       if (!dateStr) return false
