@@ -157,6 +157,24 @@ export const OrgSettingsModal: React.FC<OrgSettingsProps> = ({
                 <option>EUR (€)</option>
                 <option>GBP (£)</option>
                 <option>CAD (C$)</option>
+                <option>AUD (A$)</option>
+                <option>JPY (¥)</option>
+                <option>INR (₹)</option>
+                <option>CNY (¥)</option>
+                <option>CHF (CHF)</option>
+                <option>NZD (NZ$)</option>
+                <option>SGD (S$)</option>
+                <option>HKD (HK$)</option>
+                <option>MXN (Mex$)</option>
+                <option>BRL (R$)</option>
+                <option>ZAR (R$)</option>
+                <option>RUB (₽)</option>
+                <option>SEK (kr)</option>
+                <option>NOK (kr)</option>
+                <option>TRY (₺)</option>
+                <option>KRW (₩)</option>
+                <option>AED (AED)</option>
+                <option>SAR (SR)</option>
               </select>
             </div>
 
@@ -172,6 +190,10 @@ export const OrgSettingsModal: React.FC<OrgSettingsProps> = ({
                 <option>America/New_York</option>
                 <option>Europe/London</option>
                 <option>Asia/Tokyo</option>
+                <option>Asia/Kolkata</option>
+                <option>UTC</option>
+                <option>Asia/Dubai</option>
+                <option>Australia/Sydney</option>
               </select>
             </div>
           </div>

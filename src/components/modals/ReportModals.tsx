@@ -198,132 +198,612 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, repor
         const expenses = TransitOpsDB.getExpenses();
         const settings = TransitOpsDB.getOrgSettings();
 
-        const fileName = `${reportName.replace(/\s+/g, '_')}_export.${format.toLowerCase()}`;
+        const getCurrencySymbol = (c: string) => {
+          const match = c.match(/\(([^)]+)\)/);
+          return match ? match[1] : '$';
+        };
+        const symbol = getCurrencySymbol(settings?.currency || 'USD ($)');
+
         let fileContent = '';
         let mimeType = 'text/plain';
+        let fileExtension = 'txt';
 
         if (format === 'CSV') {
-          mimeType = 'text/csv';
+          mimeType = 'text/csv;charset=utf-8;';
+          fileExtension = 'csv';
+
+          const esc = (val: any) => {
+            if (val === null || val === undefined) return '""';
+            const str = String(val).replace(/"/g, '""');
+            return `"${str}"`;
+          };
+
           fileContent = `"TRANSITOPS SYSTEM REPORT: COMPLETE FLEET & OPERATIONS AUDIT"\n`;
-          fileContent += `"Company Name","${settings.companyName}"\n`;
-          fileContent += `"Tax ID","${settings.taxId}"\n`;
-          fileContent += `"Generated At","${new Date().toLocaleString()}"\n\n`;
+          fileContent += `"Company Name",${esc(settings.companyName)}\n`;
+          fileContent += `"Tax ID",${esc(settings.taxId)}\n`;
+          fileContent += `"Generated At",${esc(new Date().toLocaleString())}\n\n`;
 
           fileContent += `"1. VEHICLES REGISTRY"\n`;
           fileContent += `"ID","Vehicle Number","Plate Number","Type","Brand","Model","Year","Capacity (KG)","Fuel Type","Status","Notes"\n`;
-          fileContent += vehicles.map(v => `"${v.id}","${v.vehicleNumber}","${v.registrationNumber}","${v.vehicleType}","${v.brand}","${v.model}",${v.manufacturingYear},${v.capacity},"${v.fuelType}","${v.currentStatus}","${(v.notes || '').replace(/"/g, '""')}"`).join('\n') + `\n\n`;
+          fileContent += vehicles.map(v => `${esc(v.id)},${esc(v.vehicleNumber)},${esc(v.registrationNumber)},${esc(v.vehicleType)},${esc(v.brand)},${esc(v.model)},${esc(v.manufacturingYear)},${esc(v.capacity)},${esc(v.fuelType)},${esc(v.currentStatus)},${esc(v.notes)}`).join('\n') + `\n\n`;
 
           fileContent += `"2. ACTIVE DRIVERS REGISTRY"\n`;
           fileContent += `"ID","Full Name","Employee ID","Mobile","Email","License Number","License Class","Expiry Date","Experience (Yrs)","Status"\n`;
-          fileContent += drivers.map(d => `"${d.id}","${d.fullName}","${d.employeeId}","${d.mobile}","${d.email}","${d.licenseNumber}","${d.licenseCategory}","${d.licenseExpiry}",${d.experience},"${d.driverStatus}"`).join('\n') + `\n\n`;
+          fileContent += drivers.map(d => `${esc(d.id)},${esc(d.fullName)},${esc(d.employeeId)},${esc(d.mobile)},${esc(d.email)},${esc(d.licenseNumber)},${esc(d.licenseCategory)},${esc(d.licenseExpiry)},${esc(d.experience)},${esc(d.driverStatus)}`).join('\n') + `\n\n`;
 
           fileContent += `"3. DISPATCH TRIPS LOG"\n`;
           fileContent += `"ID","Trip ID","Origin","Destination","Driver","Vehicle","Cargo","Weight (KG)","Departure","Arrival","Distance (KM)","Fuel (L)","Priority","Status"\n`;
-          fileContent += trips.map(t => `"${t.id}","${t.tripId}","${t.pickupLocation}","${t.destination}","${t.driverName || 'N/A'}","${t.vehicleNumber || 'N/A'}","${t.cargoType}",${t.cargoWeight},"${t.departureDate}","${t.expectedArrival}",${t.estimatedDistance},${t.estimatedFuel},"${t.priority}","${t.status}"`).join('\n') + `\n\n`;
+          fileContent += trips.map(t => `${esc(t.id)},${esc(t.tripId)},${esc(t.pickupLocation)},${esc(t.destination)},${esc(t.driverName)},${esc(t.vehicleNumber)},${esc(t.cargoType)},${esc(t.cargoWeight)},${esc(t.departureDate)},${esc(t.expectedArrival)},${esc(t.estimatedDistance)},${esc(t.estimatedFuel)},${esc(t.priority)},${esc(t.status)}`).join('\n') + `\n\n`;
 
           fileContent += `"4. MAINTENANCE LOG"\n`;
-          fileContent += `"ID","Vehicle","Service Type","Workshop","Date","Est. Completion","Cost (USD)","Technician","Status","Notes"\n`;
-          fileContent += maintenance.map(m => `"${m.id}","${m.vehicleNumber}","${m.serviceType}","${m.workshop}","${m.serviceDate}","${m.estimatedCompletion}",${m.cost},"${m.technician}","${m.status}","${(m.notes || '').replace(/"/g, '""')}"`).join('\n') + `\n\n`;
+          fileContent += `"ID","Vehicle Number","Service Type","Workshop","Date","Est. Completion","Cost (${symbol})","Technician","Status","Notes"\n`;
+          fileContent += maintenance.map(m => `${esc(m.id)},${esc(m.vehicleNumber)},${esc(m.serviceType)},${esc(m.workshop)},${esc(m.serviceDate)},${esc(m.estimatedCompletion)},${esc(m.cost)},${esc(m.technician)},${esc(m.status)},${esc(m.notes)}`).join('\n') + `\n\n`;
 
           fileContent += `"5. REFUELING RECEIPTS"\n`;
-          fileContent += `"ID","Vehicle","Driver","Date","Quantity (L)","Cost (USD)","Station","Odometer"\n`;
-          fileContent += fuel.map(f => `"${f.id}","${f.vehicleNumber}","${f.driverName}","${f.date}",${f.fuelQuantity},${f.fuelCost},"${f.fuelStation}",${f.odometerReading}`).join('\n') + `\n\n`;
+          fileContent += `"ID","Vehicle Number","Driver","Date","Quantity (L)","Cost (${symbol})","Station","Odometer"\n`;
+          fileContent += fuel.map(f => `${esc(f.id)},${esc(f.vehicleNumber)},${esc(f.driverName)},${esc(f.date)},${esc(f.fuelQuantity)},${esc(f.fuelCost)},${esc(f.fuelStation)},${esc(f.odometerReading)}`).join('\n') + `\n\n`;
 
           fileContent += `"6. OTHER EXPENSES"\n`;
-          fileContent += `"ID","Expense Type","Vehicle","Amount (USD)","Vendor","Date","Description"\n`;
-          fileContent += expenses.map(e => `"${e.id}","${e.expenseType}","${e.vehicleNumber}",${e.amount},"${e.vendor}","${e.date}","${(e.description || '').replace(/"/g, '""')}"`).join('\n');
+          fileContent += `"ID","Expense Type","Vehicle Number","Amount (${symbol})","Vendor","Date","Description"\n`;
+          fileContent += expenses.map(e => `${esc(e.id)},${esc(e.expenseType)},${esc(e.vehicleNumber)},${esc(e.amount)},${esc(e.vendor)},${esc(e.date)},${esc(e.description)}`).join('\n');
         } else if (format === 'EXCEL') {
-          mimeType = 'text/tab-separated-values';
-          fileContent = `TRANSITOPS SYSTEM REPORT: COMPLETE FLEET & OPERATIONS AUDIT\n`;
-          fileContent += `Company Name\t${settings.companyName}\n`;
-          fileContent += `Tax ID\t${settings.taxId}\n`;
-          fileContent += `Generated At\t${new Date().toLocaleString()}\n\n`;
+          mimeType = 'application/vnd.ms-excel';
+          fileExtension = 'xlsx';
 
-          fileContent += `1. VEHICLES REGISTRY\n`;
-          fileContent += `ID\tVehicle Number\tPlate Number\tType\tBrand\tModel\tYear\tCapacity (KG)\tFuel Type\tStatus\tNotes\n`;
-          fileContent += vehicles.map(v => `${v.id}\t${v.vehicleNumber}\t${v.registrationNumber}\t${v.vehicleType}\t${v.brand}\t${v.model}\t${v.manufacturingYear}\t${v.capacity}\t${v.fuelType}\t${v.currentStatus}\t${v.notes || ''}`).join('\n') + `\n\n`;
+          const tableStyle = `
+            <style>
+              body { font-family: Arial, sans-serif; }
+              h2 { color: #1e3a8a; margin-top: 20px; }
+              table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+              th { background-color: #0f172a; color: #ffffff; font-weight: bold; border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
+              td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
+            </style>
+          `;
 
-          fileContent += `2. ACTIVE DRIVERS REGISTRY\n`;
-          fileContent += `ID\tFull Name\tEmployee ID\tMobile\tEmail\tLicense Number\tLicense Class\tExpiry Date\tExperience (Yrs)\tStatus\n`;
-          fileContent += drivers.map(d => `${d.id}\t${d.fullName}\t${d.employeeId}\t${d.mobile}\t${d.email}\t${d.licenseNumber}\t${d.licenseCategory}\t${d.licenseExpiry}\t${d.experience}\t${d.driverStatus}`).join('\n') + `\n\n`;
+          fileContent = `
+            <html xmlns:o="urn:schemas-microsoft-excel:office:office" xmlns:x="urn:schemas-microsoft-excel:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head>
+              <meta charset="utf-8">
+              ${tableStyle}
+            </head>
+            <body>
+              <h1>TRANSITOPS SYSTEM REPORT: COMPLETE FLEET & OPERATIONS AUDIT</h1>
+              <table>
+                <tr><td>Company Name:</td><td>${settings.companyName}</td></tr>
+                <tr><td>Tax ID:</td><td>${settings.taxId || 'N/A'}</td></tr>
+                <tr><td>Generated At:</td><td>${new Date().toLocaleString()}</td></tr>
+              </table>
 
-          fileContent += `3. DISPATCH TRIPS LOG\n`;
-          fileContent += `ID\tTrip ID\tOrigin\tDestination\tDriver\tVehicle\tCargo\tWeight (KG)\tDeparture\tArrival\tDistance (KM)\tFuel (L)\tPriority\tStatus\n`;
-          fileContent += trips.map(t => `${t.id}\t${t.tripId}\t${t.pickupLocation}\t${t.destination}\t${t.driverName || 'N/A'}\t${t.vehicleNumber || 'N/A'}\t${t.cargoType}\t${t.cargoWeight}\t${t.departureDate}\t${t.expectedArrival}\t${t.estimatedDistance}\t${t.estimatedFuel}\t${t.priority}\t${t.status}`).join('\n') + `\n\n`;
+              <h2>1. VEHICLES REGISTRY</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Vehicle Number</th>
+                    <th>Plate Number</th>
+                    <th>Type</th>
+                    <th>Brand</th>
+                    <th>Model</th>
+                    <th>Year</th>
+                    <th>Capacity (KG)</th>
+                    <th>Fuel Type</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${vehicles.map(v => `
+                    <tr>
+                      <td>${v.id}</td>
+                      <td><b>${v.vehicleNumber}</b></td>
+                      <td>${v.registrationNumber}</td>
+                      <td>${v.vehicleType}</td>
+                      <td>${v.brand}</td>
+                      <td>${v.model}</td>
+                      <td>${v.manufacturingYear}</td>
+                      <td>${v.capacity}</td>
+                      <td>${v.fuelType}</td>
+                      <td>${v.currentStatus}</td>
+                      <td>${v.notes || ''}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
 
-          fileContent += `4. MAINTENANCE LOG\n`;
-          fileContent += `ID\tVehicle\tService Type\tWorkshop\tDate\tEst. Completion\tCost (USD)\tTechnician\tStatus\tNotes\n`;
-          fileContent += maintenance.map(m => `${m.id}\t${m.vehicleNumber}\t${m.serviceType}\t${m.workshop}\t${m.serviceDate}\t${m.estimatedCompletion}\t${m.cost}\t${m.technician}\t${m.status}\t${m.notes || ''}`).join('\n') + `\n\n`;
+              <h2>2. ACTIVE DRIVERS REGISTRY</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Full Name</th>
+                    <th>Employee ID</th>
+                    <th>Mobile</th>
+                    <th>Email</th>
+                    <th>License Number</th>
+                    <th>Class</th>
+                    <th>Expiry Date</th>
+                    <th>Experience (Yrs)</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${drivers.map(d => `
+                    <tr>
+                      <td>${d.id}</td>
+                      <td><b>${d.fullName}</b></td>
+                      <td>${d.employeeId}</td>
+                      <td>${d.mobile}</td>
+                      <td>${d.email}</td>
+                      <td>${d.licenseNumber}</td>
+                      <td>${d.licenseCategory}</td>
+                      <td>${d.licenseExpiry}</td>
+                      <td>${d.experience}</td>
+                      <td>${d.driverStatus}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
 
-          fileContent += `5. REFUELING RECEIPTS\n`;
-          fileContent += `ID\tVehicle\tDriver\tDate\tQuantity (L)\tCost (USD)\tStation\tOdometer\n`;
-          fileContent += fuel.map(f => `${f.id}\t${f.vehicleNumber}\t${f.driverName}\t${f.date}\t${f.fuelQuantity}\t${f.fuelCost}\t${f.fuelStation}\t${f.odometerReading}`).join('\n') + `\n\n`;
+              <h2>3. DISPATCH TRIPS LOG</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Trip ID</th>
+                    <th>Origin</th>
+                    <th>Destination</th>
+                    <th>Driver</th>
+                    <th>Vehicle</th>
+                    <th>Cargo</th>
+                    <th>Weight (KG)</th>
+                    <th>Departure</th>
+                    <th>Arrival</th>
+                    <th>Distance (KM)</th>
+                    <th>Fuel (L)</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${trips.map(t => `
+                    <tr>
+                      <td>${t.id}</td>
+                      <td><b>${t.tripId}</b></td>
+                      <td>${t.pickupLocation}</td>
+                      <td>${t.destination}</td>
+                      <td>${t.driverName || 'N/A'}</td>
+                      <td>${t.vehicleNumber || 'N/A'}</td>
+                      <td>${t.cargoType}</td>
+                      <td>${t.cargoWeight}</td>
+                      <td>${t.departureDate}</td>
+                      <td>${t.expectedArrival}</td>
+                      <td>${t.estimatedDistance}</td>
+                      <td>${t.estimatedFuel}</td>
+                      <td>${t.priority}</td>
+                      <td>${t.status}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
 
-          fileContent += `6. OTHER EXPENSES\n`;
-          fileContent += `ID\tExpense Type\tVehicle\tAmount (USD)\tVendor\tDate\tDescription\n`;
-          fileContent += expenses.map(e => `${e.id}\t${e.expenseType}\t${e.vehicleNumber}\t${e.amount}\t${e.vendor}\t${e.date}\t${e.description || ''}`).join('\n');
-        } else { // PDF (Plain-text high-fidelity structure representation)
-          mimeType = 'text/plain';
-          fileContent = `========================================================================================================================\n`;
-          fileContent += `                                     TRANSITOPS GLOBAL LOGISTICS SYSTEMS AUDIT REPORT\n`;
-          fileContent += `========================================================================================================================\n`;
-          fileContent += `Company Name : ${settings.companyName}\n`;
-          fileContent += `Tax ID       : ${settings.taxId}\n`;
-          fileContent += `Support      : ${settings.supportEmail} | ${settings.supportPhone}\n`;
-          fileContent += `Address      : ${settings.address}\n`;
-          fileContent += `Generated At : ${new Date().toLocaleString()}\n`;
-          fileContent += `------------------------------------------------------------------------------------------------------------------------\n\n`;
+              <h2>4. MAINTENANCE LOG</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Vehicle Number</th>
+                    <th>Service Type</th>
+                    <th>Workshop</th>
+                    <th>Date</th>
+                    <th>Est. Completion</th>
+                    <th>Cost (${symbol})</th>
+                    <th>Technician</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${maintenance.map(m => `
+                    <tr>
+                      <td>${m.id}</td>
+                      <td><b>${m.vehicleNumber}</b></td>
+                      <td>${m.serviceType}</td>
+                      <td>${m.workshop}</td>
+                      <td>${m.serviceDate}</td>
+                      <td>${m.estimatedCompletion}</td>
+                      <td>${m.cost}</td>
+                      <td>${m.technician}</td>
+                      <td>${m.status}</td>
+                      <td>${m.notes || ''}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
 
-          fileContent += `1. VEHICLE REGISTRY SUMMARY\n`;
-          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
-          fileContent += `ID        | Number   | Plate        | Brand & Model                | Type                     | Status\n`;
-          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
-          fileContent += vehicles.map(v => `${v.id.padEnd(9)} | ${v.vehicleNumber.padEnd(8)} | ${v.registrationNumber.padEnd(12)} | ${(v.brand + ' ' + v.model).padEnd(28)} | ${v.vehicleType.padEnd(24)} | ${v.currentStatus}`).join('\n') + `\n\n`;
+              <h2>5. REFUELING RECEIPTS</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Vehicle Number</th>
+                    <th>Driver</th>
+                    <th>Date</th>
+                    <th>Quantity (L)</th>
+                    <th>Cost (${symbol})</th>
+                    <th>Station</th>
+                    <th>Odometer</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${fuel.map(f => `
+                    <tr>
+                      <td>${f.id}</td>
+                      <td><b>${f.vehicleNumber}</b></td>
+                      <td>${f.driverName}</td>
+                      <td>${f.date}</td>
+                      <td>${f.fuelQuantity}</td>
+                      <td>${f.fuelCost}</td>
+                      <td>${f.fuelStation}</td>
+                      <td>${f.odometerReading}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
 
-          fileContent += `2. ACTIVE DRIVERS REGISTRY\n`;
-          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
-          fileContent += `ID        | Full Name                | Employee ID | Mobile          | License Number | CDL Class    | Status\n`;
-          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
-          fileContent += drivers.map(d => `${d.id.padEnd(9)} | ${d.fullName.padEnd(24)} | ${d.employeeId.padEnd(11)} | ${d.mobile.padEnd(15)} | ${d.licenseNumber.padEnd(14)} | ${d.licenseCategory.padEnd(12)} | ${d.driverStatus}`).join('\n') + `\n\n`;
+              <h2>6. OTHER EXPENSES</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Expense Type</th>
+                    <th>Vehicle Number</th>
+                    <th>Amount (${symbol})</th>
+                    <th>Vendor</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${expenses.map(e => `
+                    <tr>
+                      <td>${e.id}</td>
+                      <td><b>${e.expenseType}</b></td>
+                      <td>${e.vehicleNumber}</td>
+                      <td>${e.amount}</td>
+                      <td>${e.vendor}</td>
+                      <td>${e.date}</td>
+                      <td>${e.description || ''}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </body>
+            </html>
+          `;
+        } else { // PDF Printable Document Window
+          mimeType = 'text/html';
+          fileExtension = 'html';
 
-          fileContent += `3. DISPATCH TRIPS LOG\n`;
-          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
-          fileContent += `Trip ID         | Origin                         | Destination                    | Cargo      | Weight  | Status\n`;
-          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
-          fileContent += trips.map(t => `${t.tripId.padEnd(15)} | ${t.pickupLocation.substring(0, 30).padEnd(30)} | ${t.destination.substring(0, 30).padEnd(30)} | ${t.cargoType.padEnd(10)} | ${(t.cargoWeight + ' kg').padEnd(7)} | ${t.status}`).join('\n') + `\n\n`;
+          fileContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>TransitOps Operations & Fleet Audit Report</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #1e293b;
+      margin: 30px;
+      line-height: 1.5;
+    }
+    .header {
+      border-bottom: 2px solid #3b82f6;
+      padding-bottom: 20px;
+      margin-bottom: 25px;
+    }
+    .header-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0;
+    }
+    .company-details {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #64748b;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e3a8a;
+      margin-top: 30px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 6px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      font-size: 11px;
+    }
+    th {
+      background-color: #f1f5f9;
+      color: #334155;
+      font-weight: 700;
+      border: 1px solid #cbd5e1;
+      padding: 8px;
+      text-align: left;
+    }
+    td {
+      border: 1px solid #e2e8f0;
+      padding: 8px;
+      text-align: left;
+    }
+    tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    .footer {
+      margin-top: 40px;
+      font-size: 10px;
+      color: #94a3b8;
+      text-align: center;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 class="header-title">TransitOps Operations & Fleet Audit Report</h1>
+    <div class="company-details">
+      <strong>Company:</strong> ${settings.companyName} &nbsp;|&nbsp; 
+      <strong>Tax ID:</strong> ${settings.taxId || 'N/A'} &nbsp;|&nbsp; 
+      <strong>Email:</strong> ${settings.supportEmail} &nbsp;|&nbsp; 
+      <strong>Phone:</strong> ${settings.supportPhone}<br>
+      <strong>Generated At:</strong> ${new Date().toLocaleString()}
+    </div>
+  </div>
 
-          fileContent += `4. MAINTENANCE LOG\n`;
-          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
-          fileContent += `Vehicle  | Service Type                             | Workshop                     | Date       | Cost     | Status\n`;
-          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
-          fileContent += maintenance.map(m => `${m.vehicleNumber.padEnd(8)} | ${m.serviceType.substring(0, 40).padEnd(40)} | ${m.workshop.padEnd(28)} | ${m.serviceDate} | ${('$' + m.cost).padEnd(8)} | ${m.status}`).join('\n') + `\n\n`;
+  <div class="section-title">1. VEHICLES REGISTRY</div>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Vehicle Number</th>
+        <th>Plate Number</th>
+        <th>Type</th>
+        <th>Brand</th>
+        <th>Model</th>
+        <th>Year</th>
+        <th>Capacity (KG)</th>
+        <th>Fuel Type</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${vehicles.map(v => `
+        <tr>
+          <td>${v.id}</td>
+          <td><strong>${v.vehicleNumber}</strong></td>
+          <td>${v.registrationNumber}</td>
+          <td>${v.vehicleType}</td>
+          <td>${v.brand}</td>
+          <td>${v.model}</td>
+          <td>${v.manufacturingYear}</td>
+          <td>${v.capacity.toLocaleString()}</td>
+          <td>${v.fuelType}</td>
+          <td>${v.currentStatus}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
 
-          fileContent += `5. REFUELING RECEIPTS\n`;
-          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
-          fileContent += `Vehicle  | Driver                   | Date       | Quantity (L) | Cost (USD) | Station\n`;
-          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
-          fileContent += fuel.map(f => `${f.vehicleNumber.padEnd(8)} | ${f.driverName.padEnd(24)} | ${f.date} | ${(f.fuelQuantity + ' L').padEnd(12)} | ${('$' + f.fuelCost).padEnd(10)} | ${f.fuelStation}`).join('\n') + `\n\n`;
+  <div class="section-title">2. ACTIVE DRIVERS REGISTRY</div>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Full Name</th>
+        <th>Employee ID</th>
+        <th>Mobile</th>
+        <th>Email</th>
+        <th>License Number</th>
+        <th>Class</th>
+        <th>Expiry Date</th>
+        <th>Experience (Yrs)</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${drivers.map(d => `
+        <tr>
+          <td>${d.id}</td>
+          <td><strong>${d.fullName}</strong></td>
+          <td>${d.employeeId}</td>
+          <td>${d.mobile}</td>
+          <td>${d.email}</td>
+          <td>${d.licenseNumber}</td>
+          <td>${d.licenseCategory}</td>
+          <td>${d.licenseExpiry}</td>
+          <td>${d.experience}</td>
+          <td>${d.driverStatus}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
 
-          fileContent += `6. ADMINISTRATIVE & OPERATIONAL EXPENSES\n`;
-          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
-          fileContent += `Vehicle  | Expense Type | Vendor                         | Amount     | Date       | Description\n`;
-          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
-          fileContent += expenses.map(e => `${e.vehicleNumber.padEnd(8)} | ${e.expenseType.padEnd(12)} | ${e.vendor.padEnd(30)} | ${('$' + e.amount).padEnd(10)} | ${e.date} | ${e.description}`).join('\n') + `\n\n`;
+  <div class="section-title">3. DISPATCH TRIPS LOG</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Trip ID</th>
+        <th>Origin</th>
+        <th>Destination</th>
+        <th>Driver</th>
+        <th>Vehicle</th>
+        <th>Cargo</th>
+        <th>Weight (KG)</th>
+        <th>Departure</th>
+        <th>Arrival</th>
+        <th>Distance (KM)</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${trips.map(t => `
+        <tr>
+          <td><strong>${t.tripId}</strong></td>
+          <td>${t.pickupLocation}</td>
+          <td>${t.destination}</td>
+          <td>${t.driverName || 'N/A'}</td>
+          <td>${t.vehicleNumber || 'N/A'}</td>
+          <td>${t.cargoType}</td>
+          <td>${t.cargoWeight.toLocaleString()}</td>
+          <td>${t.departureDate}</td>
+          <td>${t.expectedArrival}</td>
+          <td>${t.estimatedDistance.toLocaleString()}</td>
+          <td>${t.status}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
 
-          fileContent += `========================================================================================================================\n`;
-          fileContent += `                                            END OF REPORT - TRANSITOPS LLC\n`;
-          fileContent += `========================================================================================================================`;
+  <div class="section-title">4. MAINTENANCE LOG</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Vehicle</th>
+        <th>Service Type</th>
+        <th>Workshop</th>
+        <th>Date</th>
+        <th>Est. Completion</th>
+        <th>Cost</th>
+        <th>Technician</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${maintenance.map(m => `
+        <tr>
+          <td><strong>Truck ${m.vehicleNumber}</strong></td>
+          <td>${m.serviceType}</td>
+          <td>${m.workshop}</td>
+          <td>${m.serviceDate}</td>
+          <td>${m.estimatedCompletion}</td>
+          <td>${symbol}${m.cost.toLocaleString()}</td>
+          <td>${m.technician}</td>
+          <td>${m.status}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
+
+  <div class="section-title">5. REFUELING RECEIPTS</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Vehicle</th>
+        <th>Driver</th>
+        <th>Date</th>
+        <th>Quantity (L)</th>
+        <th>Cost</th>
+        <th>Station</th>
+        <th>Odometer</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${fuel.map(f => `
+        <tr>
+          <td><strong>Truck ${f.vehicleNumber}</strong></td>
+          <td>${f.driverName}</td>
+          <td>${f.date}</td>
+          <td>${f.fuelQuantity.toLocaleString()} L</td>
+          <td>${symbol}${f.fuelCost.toLocaleString()}</td>
+          <td>${f.fuelStation}</td>
+          <td>${f.odometerReading.toLocaleString()} KM</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
+
+  <div class="section-title">6. OTHER EXPENSES</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Vehicle</th>
+        <th>Expense Type</th>
+        <th>Vendor</th>
+        <th>Amount</th>
+        <th>Date</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${expenses.map(e => `
+        <tr>
+          <td><strong>Truck ${e.vehicleNumber}</strong></td>
+          <td>${e.expenseType}</td>
+          <td>${e.vendor}</td>
+          <td>${symbol}${e.amount.toLocaleString()}</td>
+          <td>${e.date}</td>
+          <td>${e.description || 'N/A'}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
+
+  <div class="footer">
+    TransitOps Intelligent Fleet Operations Management System - Confidential Audit Report
+  </div>
+</body>
+</html>
+          `;
         }
 
-        const blob = new Blob([fileContent], { type: mimeType });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        const fileName = `${reportName.replace(/\s+/g, '_')}_export.${fileExtension}`;
+
+        if (format === 'PDF') {
+          // Open new window for print layout
+          const printWindow = window.open('', '_blank');
+          if (printWindow) {
+            printWindow.document.write(fileContent);
+            printWindow.document.close();
+            // Automatically open print dialog
+            setTimeout(() => {
+              try {
+                printWindow.print();
+              } catch (e) {
+                console.error(e);
+              }
+            }, 500);
+          } else {
+            toast.error('Pop-up Blocked', 'Please allow pop-ups to open the print layout.');
+          }
+
+          // Also download as HTML backup
+          const blob = new Blob([fileContent], { type: 'text/html' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${reportName.replace(/\s+/g, '_')}_export.html`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        } else {
+          // Download XLSX or CSV
+          const blob = new Blob([fileContent], { type: mimeType });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = fileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
 
         toast.success(
           'Document Export Successful',

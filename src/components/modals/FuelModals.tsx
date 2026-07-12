@@ -13,6 +13,7 @@ interface AddEditFuelProps {
   vehicles: Vehicle[];
   drivers: Driver[];
   onSave: (entry: FuelEntry) => void;
+  currencySymbol?: string;
 }
 
 export const AddEditFuelModal: React.FC<AddEditFuelProps> = ({
@@ -22,6 +23,7 @@ export const AddEditFuelModal: React.FC<AddEditFuelProps> = ({
   vehicles,
   drivers,
   onSave,
+  currencySymbol = '$',
 }) => {
   const toast = useToast();
 
@@ -115,7 +117,7 @@ export const AddEditFuelModal: React.FC<AddEditFuelProps> = ({
       onSave(newEntry);
       toast.success(
         entry ? 'Fuel Entry Updated' : 'Fuel Entry Added',
-        `Logged ${fuelQuantity}L ($${fuelCost}) refuel for Truck ${newEntry.vehicleNumber}.`
+        `Logged ${fuelQuantity}L (${currencySymbol}${fuelCost}) refuel for Truck ${newEntry.vehicleNumber}.`
       );
       setIsSubmitting(false);
       onClose();
@@ -194,7 +196,7 @@ export const AddEditFuelModal: React.FC<AddEditFuelProps> = ({
 
           {/* Fuel Cost */}
           <div className="space-y-1">
-            <label className="form-label">Fuel Cost (USD) *</label>
+            <label className="form-label">Fuel Cost ({currencySymbol}) *</label>
             <input
               type="number"
               className={`form-input ${errors.fuelCost ? 'border-rose-500' : ''}`}
@@ -260,6 +262,7 @@ interface AddEditExpenseProps {
   expense?: ExpenseRecord; // If present, editing
   vehicles: Vehicle[];
   onSave: (expense: ExpenseRecord) => void;
+  currencySymbol?: string;
 }
 
 export const AddEditExpenseModal: React.FC<AddEditExpenseProps> = ({
@@ -268,6 +271,7 @@ export const AddEditExpenseModal: React.FC<AddEditExpenseProps> = ({
   expense,
   vehicles,
   onSave,
+  currencySymbol = '$',
 }) => {
   const toast = useToast();
 
@@ -357,7 +361,7 @@ export const AddEditExpenseModal: React.FC<AddEditExpenseProps> = ({
       onSave(newExpense);
       toast.success(
         expense ? 'Expense Updated' : 'Expense Logged',
-        `Logged $${amount} toll/permit expense for Truck ${newExpense.vehicleNumber}.`
+        `Logged ${currencySymbol}${amount} toll/permit expense for Truck ${newExpense.vehicleNumber}.`
       );
       setIsSubmitting(false);
       onClose();
@@ -414,9 +418,9 @@ export const AddEditExpenseModal: React.FC<AddEditExpenseProps> = ({
 
             {/* Amount */}
             <div className="space-y-1">
-              <label className="form-label">Amount (USD) *</label>
+              <label className="form-label">Amount ({currencySymbol}) *</label>
               <div className="relative">
-                <DollarSign size={14} className="absolute left-3 top-3 text-slate-500" />
+                <span className="absolute left-3 top-2.5 text-slate-500 font-bold text-xs">{currencySymbol}</span>
                 <input
                   type="number"
                   className={`form-input pl-8 ${errors.amount ? 'border-rose-500' : ''}`}
@@ -518,12 +522,14 @@ interface ExpenseDetailsProps {
   isOpen: boolean;
   onClose: () => void;
   expense: ExpenseRecord;
+  currencySymbol?: string;
 }
 
 export const ExpenseDetailsModal: React.FC<ExpenseDetailsProps> = ({
   isOpen,
   onClose,
   expense,
+  currencySymbol = '$',
 }) => {
   const [imgPreviewOpen, setImgPreviewOpen] = useState(false);
 
@@ -533,7 +539,7 @@ export const ExpenseDetailsModal: React.FC<ExpenseDetailsProps> = ({
         <div className="space-y-4 text-xs">
           <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl text-center">
             <span className="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Logged Amount</span>
-            <h2 className="text-2xl font-black text-slate-100 mt-1">${expense.amount.toLocaleString()}</h2>
+            <h2 className="text-2xl font-black text-slate-100 mt-1">{currencySymbol}{expense.amount.toLocaleString()}</h2>
             <p className="text-[10px] text-slate-400 mt-0.5">Paid to: {expense.vendor}</p>
           </div>
 
@@ -587,7 +593,7 @@ export const ExpenseDetailsModal: React.FC<ExpenseDetailsProps> = ({
           isOpen={imgPreviewOpen}
           onClose={() => setImgPreviewOpen(false)}
           imageUrl="https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?auto=format&fit=crop&w=800&q=80" // Fallback high res mockup
-          caption={`Receipt for ${expense.expenseType} - $${expense.amount} paid to ${expense.vendor}`}
+          caption={`Receipt for ${expense.expenseType} - ${currencySymbol}${expense.amount} paid to ${expense.vendor}`}
         />
       )}
     </>

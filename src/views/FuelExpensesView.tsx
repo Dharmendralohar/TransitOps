@@ -22,6 +22,7 @@ interface FuelExpensesViewProps {
     approve: boolean;
     export: boolean;
   };
+  currencySymbol?: string;
 }
 
 export const FuelExpensesView: React.FC<FuelExpensesViewProps> = ({
@@ -32,6 +33,7 @@ export const FuelExpensesView: React.FC<FuelExpensesViewProps> = ({
   onUpdateFuel,
   onUpdateExpenses,
   rolePermissions,
+  currencySymbol = '$',
 }) => {
   const canCreate = rolePermissions ? rolePermissions.create : true;
   const canEdit = rolePermissions ? rolePermissions.edit : true;
@@ -294,7 +296,7 @@ export const FuelExpensesView: React.FC<FuelExpensesViewProps> = ({
                       <td className="p-4 font-mono font-medium">{f.date}</td>
                       <td className="p-4 font-bold text-slate-200">Truck {f.vehicleNumber}</td>
                       <td className="p-4 font-semibold">{f.fuelQuantity.toLocaleString()} L</td>
-                      <td className="p-4 font-semibold text-slate-100">${f.fuelCost.toLocaleString()}</td>
+                      <td className="p-4 font-semibold text-slate-100">{currencySymbol}{f.fuelCost.toLocaleString()}</td>
                       <td className="p-4 font-mono">{f.odometerReading.toLocaleString()} KM</td>
                       <td className="p-4 font-medium">{f.fuelStation}</td>
                       <td className="p-4">{f.driverName}</td>
@@ -348,7 +350,7 @@ export const FuelExpensesView: React.FC<FuelExpensesViewProps> = ({
                   <th className="p-4">Expense Category</th>
                   <th className="p-4">Vehicle ID</th>
                   <th className="p-4 cursor-pointer hover:text-slate-200" onClick={() => handleSort('amount')}>
-                    Amount (USD) <ArrowUpDown size={12} className="inline ml-1" />
+                    Amount ({currencySymbol}) <ArrowUpDown size={12} className="inline ml-1" />
                   </th>
                   <th className="p-4">Vendor / Merchant</th>
                   <th className="p-4">Attachment</th>
@@ -372,7 +374,7 @@ export const FuelExpensesView: React.FC<FuelExpensesViewProps> = ({
                       <td className="p-4 font-mono font-medium">{e.date}</td>
                       <td className="p-4 font-bold text-slate-200">{e.expenseType}</td>
                       <td className="p-4 font-mono font-medium">Truck {e.vehicleNumber}</td>
-                      <td className="p-4 font-semibold text-slate-100">${e.amount.toLocaleString()}</td>
+                      <td className="p-4 font-semibold text-slate-100">{currencySymbol}{e.amount.toLocaleString()}</td>
                       <td className="p-4 font-medium">{e.vendor}</td>
                       <td className="p-4">
                         {e.receiptUrl ? (
@@ -464,6 +466,7 @@ export const FuelExpensesView: React.FC<FuelExpensesViewProps> = ({
         vehicles={vehicles}
         drivers={drivers}
         onSave={handleSaveFuel}
+        currencySymbol={currencySymbol}
       />
 
       <AddEditExpenseModal
@@ -472,6 +475,7 @@ export const FuelExpensesView: React.FC<FuelExpensesViewProps> = ({
         expense={selectedExpense}
         vehicles={vehicles}
         onSave={handleSaveExpense}
+        currencySymbol={currencySymbol}
       />
 
       {selectedExpense && (
@@ -479,6 +483,7 @@ export const FuelExpensesView: React.FC<FuelExpensesViewProps> = ({
           isOpen={isExpenseDetailsOpen}
           onClose={() => setIsExpenseDetailsOpen(false)}
           expense={selectedExpense}
+          currencySymbol={currencySymbol}
         />
       )}
 

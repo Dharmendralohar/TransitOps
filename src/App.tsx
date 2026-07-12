@@ -360,16 +360,15 @@ export const AppContent: React.FC = () => {
     return notifs;
   })();
 
-  // Sidebar Tabs Config
   const sidebarTabs = [
     { id: 'dashboard', label: 'Dashboard', icon: <BarChart2 size={16} />, module: 'dashboard' },
-    { id: 'fleet', label: 'Fleet Registry', icon: <Truck size={16} />, module: 'fleet' },
+    { id: 'fleet', label: 'Fleet', icon: <Truck size={16} />, module: 'fleet' },
     { id: 'drivers', label: 'Drivers', icon: <Users size={16} />, module: 'drivers' },
-    { id: 'trips', label: 'Trips & Dispatch', icon: <Navigation size={16} />, module: 'trips' },
-    { id: 'maintenance', label: 'Maintenance shop', icon: <Wrench size={16} />, module: 'maintenance' },
+    { id: 'trips', label: 'Trips', icon: <Navigation size={16} />, module: 'trips' },
+    { id: 'maintenance', label: 'Maintenance', icon: <Wrench size={16} />, module: 'maintenance' },
     { id: 'fuel', label: 'Fuel & Expenses', icon: <Fuel size={16} />, module: 'fuel' },
-    { id: 'reports', label: 'Analytics Reports', icon: <BarChart2 size={16} />, module: 'reports' },
-    { id: 'settings', label: 'Console Settings', icon: <Settings size={16} />, module: 'settings' },
+    { id: 'reports', label: 'Analytics', icon: <BarChart2 size={16} />, module: 'reports' },
+    { id: 'settings', label: 'Settings', icon: <Settings size={16} />, module: 'settings' },
     { id: 'rbac', label: 'RBAC Security', icon: <Shield size={16} />, module: 'settings' },
   ];
 
@@ -385,6 +384,12 @@ export const AppContent: React.FC = () => {
 
   // Render Page Content
   const renderView = () => {
+    const getCurrencySymbol = (c: string) => {
+      const match = c.match(/\(([^)]+)\)/);
+      return match ? match[1] : '$';
+    };
+    const currencySymbol = getCurrencySymbol(settings?.currency || 'USD ($)');
+
     const tabConfig = sidebarTabs.find(t => t.id === activeTab);
     if (tabConfig && !canViewModule(tabConfig.module)) {
       return (
@@ -431,6 +436,7 @@ export const AppContent: React.FC = () => {
             onUpdateVehicles={updateVehicles}
             onUpdateDrivers={updateDrivers}
             rolePermissions={activeRoleObject?.permissions?.fleet}
+            currencySymbol={currencySymbol}
           />
         );
       case 'drivers':
@@ -463,6 +469,7 @@ export const AppContent: React.FC = () => {
             onUpdateMaintenance={updateMaintenance}
             onUpdateVehicles={updateVehicles}
             rolePermissions={activeRoleObject?.permissions?.maintenance}
+            currencySymbol={currencySymbol}
           />
         );
       case 'fuel':
@@ -475,6 +482,7 @@ export const AppContent: React.FC = () => {
             onUpdateFuel={updateFuel}
             onUpdateExpenses={updateExpenses}
             rolePermissions={activeRoleObject?.permissions?.fuel}
+            currencySymbol={currencySymbol}
           />
         );
       case 'reports':
@@ -487,6 +495,7 @@ export const AppContent: React.FC = () => {
             fuel={fuel}
             expenses={expenses}
             rolePermissions={activeRoleObject?.permissions?.reports}
+            currencySymbol={currencySymbol}
           />
         );
       case 'settings':

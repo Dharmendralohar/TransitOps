@@ -24,6 +24,7 @@ interface VehiclesViewProps {
     approve: boolean;
     export: boolean;
   };
+  currencySymbol?: string;
 }
 
 export const VehiclesView: React.FC<VehiclesViewProps> = ({
@@ -36,6 +37,7 @@ export const VehiclesView: React.FC<VehiclesViewProps> = ({
   onUpdateVehicles,
   onUpdateDrivers,
   rolePermissions,
+  currencySymbol = '$',
 }) => {
   const canCreate = rolePermissions ? rolePermissions.create : true;
   const canEdit = rolePermissions ? rolePermissions.edit : true;
@@ -549,6 +551,7 @@ export const VehiclesView: React.FC<VehiclesViewProps> = ({
         allVehicles={vehicles}
         drivers={drivers}
         onSave={handleSaveVehicle}
+        currencySymbol={currencySymbol}
       />
 
       {selectedVehicle && (
@@ -565,6 +568,7 @@ export const VehiclesView: React.FC<VehiclesViewProps> = ({
               setIsDetailsOpen(false);
               handleOpenAssign(selectedVehicle);
             } : undefined}
+            currencySymbol={currencySymbol}
           />
 
           <AssignDriverModal

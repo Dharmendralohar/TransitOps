@@ -12,6 +12,7 @@ interface AddEditVehicleProps {
   allVehicles: Vehicle[];
   drivers: Driver[];
   onSave: (vehicle: Vehicle) => void;
+  currencySymbol?: string;
 }
 
 export const AddEditVehicleModal: React.FC<AddEditVehicleProps> = ({
@@ -21,6 +22,7 @@ export const AddEditVehicleModal: React.FC<AddEditVehicleProps> = ({
   allVehicles,
   drivers,
   onSave,
+  currencySymbol = '$',
 }) => {
   const toast = useToast();
   
@@ -322,7 +324,7 @@ export const AddEditVehicleModal: React.FC<AddEditVehicleProps> = ({
 
           {/* Purchase Cost */}
           <div className="space-y-1">
-            <label className="form-label">Purchase Value (USD) *</label>
+            <label className="form-label">Purchase Value ({currencySymbol}) *</label>
             <input
               type="number"
               className={`form-input ${errors.purchaseCost ? 'border-rose-500' : ''}`}
@@ -443,6 +445,7 @@ interface ViewVehicleDetailsProps {
   vehicle: Vehicle;
   onEdit?: () => void;
   onAssignDriver?: () => void;
+  currencySymbol?: string;
 }
 
 export const ViewVehicleDetailsModal: React.FC<ViewVehicleDetailsProps> = ({
@@ -451,6 +454,7 @@ export const ViewVehicleDetailsModal: React.FC<ViewVehicleDetailsProps> = ({
   vehicle,
   onEdit,
   onAssignDriver,
+  currencySymbol = '$',
 }) => {
   const statusColors = {
     Active: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
@@ -520,7 +524,7 @@ export const ViewVehicleDetailsModal: React.FC<ViewVehicleDetailsProps> = ({
             </div>
             <div className="flex justify-between py-1 border-b border-slate-800/50 pl-2">
               <span className="text-slate-400">Purchase Cost</span>
-              <strong className="text-slate-200">${vehicle.purchaseCost.toLocaleString()}</strong>
+              <strong className="text-slate-200">{currencySymbol}{vehicle.purchaseCost.toLocaleString()}</strong>
             </div>
           </div>
         </div>

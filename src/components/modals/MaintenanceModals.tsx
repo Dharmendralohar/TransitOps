@@ -11,6 +11,7 @@ interface ScheduleEditMaintenanceProps {
   record?: MaintenanceRecord; // If present, editing
   vehicles: Vehicle[];
   onSave: (record: MaintenanceRecord) => void;
+  currencySymbol?: string;
 }
 
 export const ScheduleEditMaintenanceModal: React.FC<ScheduleEditMaintenanceProps> = ({
@@ -19,6 +20,7 @@ export const ScheduleEditMaintenanceModal: React.FC<ScheduleEditMaintenanceProps
   record,
   vehicles,
   onSave,
+  currencySymbol = '$',
 }) => {
   const toast = useToast();
 
@@ -233,7 +235,7 @@ export const ScheduleEditMaintenanceModal: React.FC<ScheduleEditMaintenanceProps
 
           {/* Cost */}
           <div className="space-y-1">
-            <label className="form-label">Cost (USD) *</label>
+            <label className="form-label">Cost ({currencySymbol}) *</label>
             <input
               type="number"
               className={`form-input ${errors.cost ? 'border-rose-500' : ''}`}
@@ -297,6 +299,7 @@ interface MarkCompletedProps {
   onClose: () => void;
   record: MaintenanceRecord;
   onComplete: (cost: number, notes: string) => void;
+  currencySymbol?: string;
 }
 
 export const MarkCompletedModal: React.FC<MarkCompletedProps> = ({
@@ -304,6 +307,7 @@ export const MarkCompletedModal: React.FC<MarkCompletedProps> = ({
   onClose,
   record,
   onComplete,
+  currencySymbol = '$',
 }) => {
   const [cost, setCost] = useState(record.cost);
   const [notes, setNotes] = useState(record.notes || '');
@@ -345,9 +349,9 @@ export const MarkCompletedModal: React.FC<MarkCompletedProps> = ({
         </div>
 
         <div className="space-y-1">
-          <label className="form-label">Final Invoice Amount (USD) *</label>
+          <label className="form-label">Final Invoice Amount ({currencySymbol}) *</label>
           <div className="relative">
-            <DollarSign size={14} className="absolute left-3 top-3 text-slate-500" />
+            <span className="absolute left-3 top-2.5 text-slate-500 font-bold text-xs">{currencySymbol}</span>
             <input
               type="number"
               className="form-input pl-8"
@@ -394,12 +398,14 @@ interface ViewServiceHistoryProps {
   isOpen: boolean;
   onClose: () => void;
   record: MaintenanceRecord;
+  currencySymbol?: string;
 }
 
 export const ViewServiceHistoryModal: React.FC<ViewServiceHistoryProps> = ({
   isOpen,
   onClose,
   record,
+  currencySymbol = '$',
 }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Garage Invoice Report: ${record.vehicleNumber}`} size="sm" themeType="maintenance">
@@ -436,7 +442,7 @@ export const ViewServiceHistoryModal: React.FC<ViewServiceHistoryProps> = ({
           </div>
           <div className="p-3 bg-slate-900/40 border border-slate-850 rounded-xl space-y-1">
             <span className="text-[9px] text-slate-500 uppercase flex items-center gap-1"><DollarSign size={12} /> Invoice Total</span>
-            <p className="text-slate-200 font-bold">${record.cost.toLocaleString()}</p>
+            <p className="text-slate-200 font-bold">{currencySymbol}{record.cost.toLocaleString()}</p>
           </div>
         </div>
 

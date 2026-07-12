@@ -20,6 +20,7 @@ interface MaintenanceViewProps {
     approve: boolean;
     export: boolean;
   };
+  currencySymbol?: string;
 }
 
 export const MaintenanceView: React.FC<MaintenanceViewProps> = ({
@@ -28,6 +29,7 @@ export const MaintenanceView: React.FC<MaintenanceViewProps> = ({
   onUpdateMaintenance,
   onUpdateVehicles,
   rolePermissions,
+  currencySymbol = '$',
 }) => {
   const canCreate = rolePermissions ? rolePermissions.create : true;
   const canEdit = rolePermissions ? rolePermissions.edit : true;
@@ -254,7 +256,7 @@ export const MaintenanceView: React.FC<MaintenanceViewProps> = ({
                   <td className="p-4 font-medium">{m.serviceType}</td>
                   <td className="p-4">{m.workshop}</td>
                   <td className="p-4 font-mono">{m.serviceDate}</td>
-                  <td className="p-4 font-semibold text-slate-100">${m.cost.toLocaleString()}</td>
+                  <td className="p-4 font-semibold text-slate-100">{currencySymbol}{m.cost.toLocaleString()}</td>
                   <td className="p-4 font-medium">{m.technician}</td>
                   <td className="p-4">
                     <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold ${statusColors[m.status]}`}>
@@ -350,6 +352,7 @@ export const MaintenanceView: React.FC<MaintenanceViewProps> = ({
         record={selectedRecord}
         vehicles={vehicles}
         onSave={handleSaveRecord}
+        currencySymbol={currencySymbol}
       />
 
       {selectedRecord && (
@@ -358,6 +361,7 @@ export const MaintenanceView: React.FC<MaintenanceViewProps> = ({
             isOpen={isDetailsOpen}
             onClose={() => setIsDetailsOpen(false)}
             record={selectedRecord}
+            currencySymbol={currencySymbol}
           />
 
           <MarkCompletedModal
@@ -365,6 +369,7 @@ export const MaintenanceView: React.FC<MaintenanceViewProps> = ({
             onClose={() => setIsCompleteOpen(false)}
             record={selectedRecord}
             onComplete={handleCompleteRecord}
+            currencySymbol={currencySymbol}
           />
 
           <DeleteConfirmDialog
