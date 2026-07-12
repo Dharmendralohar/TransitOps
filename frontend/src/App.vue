@@ -8,7 +8,7 @@
 
     <template v-else>
       <!-- Sidebar -->
-      <aside :class="['sidebar', { 'mobile-open': mobileOpen }]">
+      <aside v-if="currentUser.authenticated" :class="['sidebar', { 'mobile-open': mobileOpen }]">
         <div class="sidebar-brand">
           <div class="brand-logo">⚡</div>
           <div class="brand-name">TransitOps</div>
@@ -71,9 +71,9 @@
       </aside>
 
       <!-- Main Layout -->
-      <div class="main-layout">
+      <div :class="currentUser.authenticated ? 'main-layout' : 'full-layout'">
         <!-- Top Navbar -->
-        <header class="top-navbar">
+        <header v-if="currentUser.authenticated" class="top-navbar">
           <button class="menu-toggle" @click="mobileOpen = !mobileOpen">
             ☰
           </button>
@@ -86,7 +86,7 @@
         </header>
 
         <!-- View Container -->
-        <main class="content-container">
+        <main :class="currentUser.authenticated ? 'content-container' : 'login-container-wrap'">
           <router-view :user="currentUser" @refresh-user="fetchUser"></router-view>
         </main>
       </div>
@@ -108,6 +108,15 @@ export default {
         roles: [],
         driver: null,
         site_name: ''
+      }
+    }
+  },
+  watch: {
+    $route(to) {
+      if (!this.currentUser.authenticated && to.path !== '/login') {
+        this.$router.push('/login')
+      } else if (this.currentUser.authenticated && to.path === '/login') {
+        this.$router.push('/')
       }
     }
   },
@@ -157,7 +166,13 @@ export default {
               window.csrf_token = res.message.csrf_token
             }
             if (!res.message.authenticated) {
-              window.location.href = '/login?redirect-to=/transitops';
+              if (this.$route.path !== '/login') {
+                this.$router.push('/login')
+              }
+            } else {
+              if (this.$route.path === '/login') {
+                this.$router.push('/')
+              }
             }
           }
         }
@@ -185,7 +200,15 @@ export default {
             'X-Frappe-CSRF-Token': window.csrf_token
           }
         });
-        window.location.href = '/login?redirect-to=/transitops';
+        this.currentUser = {
+          authenticated: false,
+          user: '',
+          full_name: '',
+          roles: [],
+          driver: null,
+          site_name: ''
+        };
+        this.$router.push('/login');
       } catch (err) {
         console.error('Logout failed:', err);
       }
@@ -455,6 +478,23 @@ body, html {
   padding: 24px;
   overflow-y: auto;
   background-color: #0b0f19;
+}
+
+.full-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+.login-container-wrap {
+  flex: 1;
+  overflow-y: auto;
+  background-color: #0b0f19;
+  height: 100vh;
+  width: 100vw;
 }
 
 /* Common View Styles */

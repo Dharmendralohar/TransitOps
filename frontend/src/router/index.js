@@ -7,6 +7,7 @@ import Maintenance from '../views/Maintenance.vue'
 import Expenses from '../views/Expenses.vue'
 import Reports from '../views/Reports.vue'
 import Settings from '../views/Settings.vue'
+import Login from '../views/Login.vue'
 
 const routes = [
   { path: '/', name: 'Dashboard', component: Dashboard },
@@ -16,7 +17,8 @@ const routes = [
   { path: '/maintenance', name: 'Maintenance', component: Maintenance },
   { path: '/expenses', name: 'Expenses', component: Expenses },
   { path: '/reports', name: 'Reports', component: Reports },
-  { path: '/settings', name: 'Settings', component: Settings }
+  { path: '/settings', name: 'Settings', component: Settings },
+  { path: '/login', name: 'Login', component: Login }
 ]
 
 const router = createRouter({

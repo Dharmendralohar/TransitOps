@@ -253,7 +253,8 @@ fixtures = [
 				"Fleet Manager",
 				"Driver",
 				"Safety Officer",
-				"Financial Analyst"
+				"Financial Analyst",
+				"Dispatcher"
 			]]
 		]
 	}

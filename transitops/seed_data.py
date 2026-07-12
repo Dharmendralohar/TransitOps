@@ -5,7 +5,7 @@ def seed():
 	print("Starting database seeding for TransitOps...")
 	
 	# 1. Create Roles
-	roles = ["Fleet Manager", "Safety Officer", "Financial Analyst", "Driver"]
+	roles = ["Fleet Manager", "Safety Officer", "Financial Analyst", "Driver", "Dispatcher"]
 	for r in roles:
 		if not frappe.db.exists("Role", r):
 			role_doc = frappe.new_doc("Role")
@@ -44,6 +44,30 @@ def seed():
 			"first_name": "Jane",
 			"last_name": "Smith",
 			"roles": ["Driver"]
+		},
+		{
+			"email": "d.jenkins@transitops.com",
+			"first_name": "Daniel",
+			"last_name": "Jenkins",
+			"roles": ["Dispatcher"]
+		},
+		{
+			"email": "l.collins@transitops.com",
+			"first_name": "Lori",
+			"last_name": "Collins",
+			"roles": ["Fleet Manager"]
+		},
+		{
+			"email": "d.chen@transitops.com",
+			"first_name": "David",
+			"last_name": "Chen",
+			"roles": ["Safety Officer"]
+		},
+		{
+			"email": "m.sterling@transitops.com",
+			"first_name": "Marcus",
+			"last_name": "Sterling",
+			"roles": ["Financial Analyst"]
 		}
 	]
 	
