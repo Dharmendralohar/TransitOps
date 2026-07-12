@@ -1,0 +1,164 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-07-12T11:45:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "source",
+  "destination",
+  "vehicle",
+  "driver",
+  "cargo_weight",
+  "planned_distance",
+  "dispatch_datetime",
+  "completion_datetime",
+  "starting_odometer",
+  "final_odometer",
+  "actual_distance",
+  "fuel_consumed",
+  "revenue",
+  "status",
+  "cancellation_reason",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "TRIP-.YYYY.-.#####",
+   "default": "TRIP-.YYYY.-.#####",
+   "hidden": 0
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Data",
+   "label": "Source",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "destination",
+   "fieldtype": "Data",
+   "label": "Destination",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "vehicle",
+   "fieldtype": "Link",
+   "label": "Vehicle",
+   "options": "Vehicle",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "driver",
+   "fieldtype": "Link",
+   "label": "Driver",
+   "options": "Driver",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "cargo_weight",
+   "fieldtype": "Float",
+   "label": "Cargo Weight (kg)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "planned_distance",
+   "fieldtype": "Float",
+   "label": "Planned Distance (km)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "dispatch_datetime",
+   "fieldtype": "Datetime",
+   "label": "Dispatch Date and Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "completion_datetime",
+   "fieldtype": "Datetime",
+   "label": "Completion Date and Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "starting_odometer",
+   "fieldtype": "Float",
+   "label": "Starting Odometer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "final_odometer",
+   "fieldtype": "Float",
+   "label": "Final Odometer"
+  },
+  {
+   "fieldname": "actual_distance",
+   "fieldtype": "Float",
+   "label": "Actual Distance (km)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fuel_consumed",
+   "fieldtype": "Float",
+   "label": "Fuel Consumed (liters)"
+  },
+  {
+   "fieldname": "revenue",
+   "fieldtype": "Currency",
+   "label": "Trip Revenue"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nDispatched\nCompleted\nCancelled",
+   "default": "Draft",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "cancellation_reason",
+   "fieldtype": "Small Text",
+   "label": "Cancellation Reason"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-07-12T11:45:00",
+ "modified_by": "Administrator",
+ "module": "TransitOps",
+ "name": "Trip",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

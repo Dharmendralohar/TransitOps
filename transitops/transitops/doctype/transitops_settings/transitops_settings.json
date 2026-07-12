@@ -1,0 +1,56 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "issingle": 1,
+ "creation": "2026-07-12T11:45:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "enable_license_reminders",
+  "license_reminder_days",
+  "reminder_recipients"
+ ],
+ "fields": [
+  {
+   "fieldname": "enable_license_reminders",
+   "fieldtype": "Check",
+   "label": "Enable License Reminders",
+   "default": "1"
+  },
+  {
+   "fieldname": "license_reminder_days",
+   "fieldtype": "Int",
+   "label": "Reminder Period (Days)",
+   "default": "30"
+  },
+  {
+   "fieldname": "reminder_recipients",
+   "fieldtype": "Small Text",
+   "label": "Reminder Recipients (Comma-separated emails)"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-07-12T11:45:00",
+ "modified_by": "Administrator",
+ "module": "TransitOps",
+ "name": "TransitOps Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

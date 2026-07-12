@@ -1,0 +1,17 @@
+import frappe
+from frappe import _
+
+no_cache = 1
+
+def get_context():
+	context = frappe._dict()
+	context.boot = get_boot()
+	return context
+
+def get_boot():
+	return frappe._dict({
+		"frappe_version": frappe.__version__,
+		"site_name": frappe.local.site,
+		"csrf_token": frappe.sessions.get_csrf_token(),
+		"user": frappe.session.user
+	})

@@ -126,13 +126,13 @@ app_license = "mit"
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
-#
-# has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+permission_query_conditions = {
+	"Trip": "transitops.transitops.permissions.get_permission_query_conditions",
+}
+
+has_permission = {
+	"Trip": "transitops.transitops.permissions.has_permission",
+}
 
 # Document Events
 # ---------------
@@ -149,23 +149,12 @@ app_license = "mit"
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"transitops.tasks.all"
-# 	],
-# 	"daily": [
-# 		"transitops.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"transitops.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"transitops.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"transitops.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	"daily": [
+		"transitops.transitops.tasks.send_license_expiry_reminders"
+	]
+}
+
 
 # Testing
 # -------
@@ -255,4 +244,19 @@ app_license = "mit"
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
+
+fixtures = [
+	{
+		"dt": "Role",
+		"filters": [
+			["name", "in", [
+				"Fleet Manager",
+				"Driver",
+				"Safety Officer",
+				"Financial Analyst"
+			]]
+		]
+	}
+]
+
 
