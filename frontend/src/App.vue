@@ -41,7 +41,7 @@
           </router-link>
           <router-link to="/reports" class="nav-item" active-class="active" @click="mobileOpen = false">
             <span class="nav-icon">📈</span>
-            <span class="nav-label">Reports</span>
+            <span class="nav-label">Analytics</span>
           </router-link>
           <router-link to="/settings" class="nav-item" active-class="active" @click="mobileOpen = false">
             <span class="nav-icon">⚙️</span>

@@ -9,7 +9,10 @@
  "field_order": [
   "enable_license_reminders",
   "license_reminder_days",
-  "reminder_recipients"
+  "reminder_recipients",
+  "depot_name",
+  "currency",
+  "distance_unit"
  ],
  "fields": [
   {
@@ -28,11 +31,31 @@
    "fieldname": "reminder_recipients",
    "fieldtype": "Small Text",
    "label": "Reminder Recipients (Comma-separated emails)"
+  },
+  {
+   "fieldname": "depot_name",
+   "fieldtype": "Data",
+   "label": "Depot Name",
+   "default": "Gandhinagar"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "default": "INR"
+  },
+  {
+   "fieldname": "distance_unit",
+   "fieldtype": "Select",
+   "label": "Distance Unit",
+   "options": "Kilometers\nMiles",
+   "default": "Kilometers"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-07-12T11:45:00",
+ "modified": "2026-07-12T13:25:00",
  "modified_by": "Administrator",
  "module": "TransitOps",
  "name": "TransitOps Settings",
@@ -46,6 +69,17 @@
    "print": 1,
    "read": 1,
    "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Fleet Manager",
    "share": 1,
    "write": 1
   }

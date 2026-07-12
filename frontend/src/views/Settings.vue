@@ -21,6 +21,44 @@
       </div>
 
       <form @submit.prevent="saveSettings">
+        <!-- General Settings Section -->
+        <h3 class="section-title">General Settings</h3>
+        
+        <div class="form-group mb-20">
+          <label>Depot Name</label>
+          <input 
+            type="text" 
+            v-model="settings.depot_name" 
+            class="form-control" 
+            placeholder="e.g. Gandhinagar" 
+            :disabled="!canManageSettings" 
+          />
+          <p class="help-text">Set the default depot or base of operations name.</p>
+        </div>
+
+        <div class="form-group mb-20">
+          <label>Currency</label>
+          <select v-model="settings.currency" class="form-control" :disabled="!canManageSettings">
+            <option value="INR">INR (Rs.)</option>
+            <option value="USD">USD ($)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="GBP">GBP (£)</option>
+          </select>
+          <p class="help-text">Select system currency for pricing and cost computations.</p>
+        </div>
+
+        <div class="form-group mb-20">
+          <label>Distance Unit</label>
+          <select v-model="settings.distance_unit" class="form-control" :disabled="!canManageSettings">
+            <option value="Kilometers">Kilometers</option>
+            <option value="Miles">Miles</option>
+          </select>
+          <p class="help-text">Choose unit of measure for vehicle odometer tracking.</p>
+        </div>
+
+        <!-- Compliance & Reminders Section -->
+        <h3 class="section-title mt-30">Compliance & Reminders</h3>
+
         <div class="form-group mb-24">
           <label class="checkbox-label">
             <input type="checkbox" v-model="settings.enable_license_reminders" :disabled="!canManageSettings" />
@@ -66,6 +104,9 @@ export default {
       successMsg: '',
       errorMsg: '',
       settings: {
+        depot_name: 'Gandhinagar',
+        currency: 'INR',
+        distance_unit: 'Kilometers',
         enable_license_reminders: 1,
         license_reminder_days: 30,
         reminder_recipients: ''
@@ -88,7 +129,7 @@ export default {
         if (response.ok) {
           const res = await response.json()
           if (res.data) {
-            this.settings = res.data
+            this.settings = { ...this.settings, ...res.data }
           }
         }
       } catch (err) {
@@ -129,12 +170,43 @@ export default {
 </script>
 
 <style scoped>
+.settings-view {
+  padding: 8px;
+}
+
+.view-header {
+  margin-bottom: 24px;
+}
+
+.view-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
 .settings-card {
   background-color: #111827;
   border: 1px solid #1f2937;
   border-radius: 12px;
   padding: 32px;
   max-width: 650px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #3b82f6;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #1f2937;
+  padding-bottom: 8px;
+}
+
+.mt-30 {
+  margin-top: 30px;
+}
+
+.form-group {
+  margin-bottom: 20px;
 }
 
 .checkbox-label {
