@@ -1,0 +1,119 @@
+{
+ "app": "transitops",
+ "charts": [
+  {
+   "chart_name": "TransitOps Trip Status",
+   "label": "Trip Status"
+  }
+ ],
+ "content": "[]",
+ "creation": "2026-07-12 03:33:05.757408",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "hide_custom": 0,
+ "icon": "ship",
+ "idx": 0,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "TransitOps Desk",
+ "link_type": "DocType",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Vehicles",
+   "link_count": 0,
+   "link_to": "Vehicle",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Drivers",
+   "link_count": 0,
+   "link_to": "Driver",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Trips",
+   "link_count": 0,
+   "link_to": "Trip",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Maintenance Logs",
+   "link_count": 0,
+   "link_to": "Maintenance Log",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Fuel Logs",
+   "link_count": 0,
+   "link_to": "Fuel Log",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Expenses",
+   "link_count": 0,
+   "link_to": "Expense",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Settings",
+   "link_count": 0,
+   "link_to": "TransitOps Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-07-12 03:33:05.757408",
+ "modified_by": "Administrator",
+ "module": "TransitOps",
+ "name": "TransitOps Desk",
+ "number_cards": [
+  {
+   "label": "Active Vehicles",
+   "number_card_name": "Active Vehicles"
+  },
+  {
+   "label": "Pending Trips",
+   "number_card_name": "Pending Trips"
+  },
+  {
+   "label": "Active Trips",
+   "number_card_name": "Active Trips"
+  }
+ ],
+ "owner": "Administrator",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 0.0,
+ "shortcuts": [],
+ "title": "TransitOps Desk",
+ "type": "Workspace"
+}
