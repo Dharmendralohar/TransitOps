@@ -441,8 +441,8 @@ interface ViewVehicleDetailsProps {
   isOpen: boolean;
   onClose: () => void;
   vehicle: Vehicle;
-  onEdit: () => void;
-  onAssignDriver: () => void;
+  onEdit?: () => void;
+  onAssignDriver?: () => void;
 }
 
 export const ViewVehicleDetailsModal: React.FC<ViewVehicleDetailsProps> = ({
@@ -539,12 +539,14 @@ export const ViewVehicleDetailsModal: React.FC<ViewVehicleDetailsProps> = ({
                   {vehicle.assignedDriverName || 'No Driver Assigned'}
                 </p>
               </div>
-              <button
-                onClick={onAssignDriver}
-                className="px-3 py-1 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-lg font-semibold transition"
-              >
-                {vehicle.assignedDriverId ? 'Change Driver' : 'Assign Driver'}
-              </button>
+              {onAssignDriver && (
+                <button
+                  onClick={onAssignDriver}
+                  className="px-3 py-1 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-lg font-semibold transition"
+                >
+                  {vehicle.assignedDriverId ? 'Change Driver' : 'Assign Driver'}
+                </button>
+              )}
             </div>
 
             {/* Insurance Expiry */}
@@ -588,12 +590,14 @@ export const ViewVehicleDetailsModal: React.FC<ViewVehicleDetailsProps> = ({
         )}
 
         <ModalFooter>
-          <button
-            onClick={onEdit}
-            className="px-4 py-2 font-medium bg-brand-600 hover:bg-brand-500 text-white rounded-xl transition"
-          >
-            Edit Profile
-          </button>
+          {onEdit && (
+            <button
+              onClick={onEdit}
+              className="px-4 py-2 font-medium bg-brand-600 hover:bg-brand-500 text-white rounded-xl transition"
+            >
+              Edit Profile
+            </button>
+          )}
           <button
             onClick={onClose}
             className="px-4 py-2 font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition"

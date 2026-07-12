@@ -462,8 +462,8 @@ interface ViewTripDetailsProps {
   isOpen: boolean;
   onClose: () => void;
   trip: Trip;
-  onEdit: () => void;
-  onUpdateStatus: () => void;
+  onEdit?: () => void;
+  onUpdateStatus?: () => void;
 }
 
 export const ViewTripDetailsModal: React.FC<ViewTripDetailsProps> = ({
@@ -577,18 +577,22 @@ export const ViewTripDetailsModal: React.FC<ViewTripDetailsProps> = ({
         )}
 
         <ModalFooter>
-          <button
-            onClick={onUpdateStatus}
-            className="px-4 py-2 font-semibold bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-xl transition"
-          >
-            Update Route Status
-          </button>
-          <button
-            onClick={onEdit}
-            className="px-4 py-2 font-semibold bg-brand-600 hover:bg-brand-500 text-white rounded-xl transition"
-          >
-            Edit Details
-          </button>
+          {onUpdateStatus && (
+            <button
+              onClick={onUpdateStatus}
+              className="px-4 py-2 font-semibold bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-xl transition"
+            >
+              Update Route Status
+            </button>
+          )}
+          {onEdit && (
+            <button
+              onClick={onEdit}
+              className="px-4 py-2 font-semibold bg-brand-600 hover:bg-brand-500 text-white rounded-xl transition"
+            >
+              Edit Details
+            </button>
+          )}
           <button
             onClick={onClose}
             className="px-4 py-2 font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition"

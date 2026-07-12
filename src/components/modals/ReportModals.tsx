@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, ModalFooter } from '../Modal';
-import { Driver, Vehicle } from '../../data/database';
+import { Driver, Vehicle, TransitOpsDB } from '../../data/database';
 import { useToast } from '../Toast';
 import { Filter, Download, FileSpreadsheet, FileJson, FileText, Loader2 } from 'lucide-react';
 
@@ -189,32 +189,130 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, repor
         clearInterval(interval);
         setExporting(false);
 
-        // Generate and trigger download
+        // Fetch live database values
+        const vehicles = TransitOpsDB.getVehicles();
+        const drivers = TransitOpsDB.getDrivers();
+        const trips = TransitOpsDB.getTrips();
+        const maintenance = TransitOpsDB.getMaintenance();
+        const fuel = TransitOpsDB.getFuelEntries();
+        const expenses = TransitOpsDB.getExpenses();
+        const settings = TransitOpsDB.getOrgSettings();
+
         const fileName = `${reportName.replace(/\s+/g, '_')}_export.${format.toLowerCase()}`;
         let fileContent = '';
         let mimeType = 'text/plain';
 
         if (format === 'CSV') {
           mimeType = 'text/csv';
-          fileContent = `Report Name,${reportName}\nGenerated At,${new Date().toLocaleString()}\nModule,TransitOps Fleet Management\n\n`;
-          fileContent += `Metric,Value\nTotal Fleet Vehicles,5\nActive Drivers,3\nCompleted Trips,4\nScheduled Maintenance,2\n`;
+          fileContent = `"TRANSITOPS SYSTEM REPORT: COMPLETE FLEET & OPERATIONS AUDIT"\n`;
+          fileContent += `"Company Name","${settings.companyName}"\n`;
+          fileContent += `"Tax ID","${settings.taxId}"\n`;
+          fileContent += `"Generated At","${new Date().toLocaleString()}"\n\n`;
+
+          fileContent += `"1. VEHICLES REGISTRY"\n`;
+          fileContent += `"ID","Vehicle Number","Plate Number","Type","Brand","Model","Year","Capacity (KG)","Fuel Type","Status","Notes"\n`;
+          fileContent += vehicles.map(v => `"${v.id}","${v.vehicleNumber}","${v.registrationNumber}","${v.vehicleType}","${v.brand}","${v.model}",${v.manufacturingYear},${v.capacity},"${v.fuelType}","${v.currentStatus}","${(v.notes || '').replace(/"/g, '""')}"`).join('\n') + `\n\n`;
+
+          fileContent += `"2. ACTIVE DRIVERS REGISTRY"\n`;
+          fileContent += `"ID","Full Name","Employee ID","Mobile","Email","License Number","License Class","Expiry Date","Experience (Yrs)","Status"\n`;
+          fileContent += drivers.map(d => `"${d.id}","${d.fullName}","${d.employeeId}","${d.mobile}","${d.email}","${d.licenseNumber}","${d.licenseCategory}","${d.licenseExpiry}",${d.experience},"${d.driverStatus}"`).join('\n') + `\n\n`;
+
+          fileContent += `"3. DISPATCH TRIPS LOG"\n`;
+          fileContent += `"ID","Trip ID","Origin","Destination","Driver","Vehicle","Cargo","Weight (KG)","Departure","Arrival","Distance (KM)","Fuel (L)","Priority","Status"\n`;
+          fileContent += trips.map(t => `"${t.id}","${t.tripId}","${t.pickupLocation}","${t.destination}","${t.driverName || 'N/A'}","${t.vehicleNumber || 'N/A'}","${t.cargoType}",${t.cargoWeight},"${t.departureDate}","${t.expectedArrival}",${t.estimatedDistance},${t.estimatedFuel},"${t.priority}","${t.status}"`).join('\n') + `\n\n`;
+
+          fileContent += `"4. MAINTENANCE LOG"\n`;
+          fileContent += `"ID","Vehicle","Service Type","Workshop","Date","Est. Completion","Cost (USD)","Technician","Status","Notes"\n`;
+          fileContent += maintenance.map(m => `"${m.id}","${m.vehicleNumber}","${m.serviceType}","${m.workshop}","${m.serviceDate}","${m.estimatedCompletion}",${m.cost},"${m.technician}","${m.status}","${(m.notes || '').replace(/"/g, '""')}"`).join('\n') + `\n\n`;
+
+          fileContent += `"5. REFUELING RECEIPTS"\n`;
+          fileContent += `"ID","Vehicle","Driver","Date","Quantity (L)","Cost (USD)","Station","Odometer"\n`;
+          fileContent += fuel.map(f => `"${f.id}","${f.vehicleNumber}","${f.driverName}","${f.date}",${f.fuelQuantity},${f.fuelCost},"${f.fuelStation}",${f.odometerReading}`).join('\n') + `\n\n`;
+
+          fileContent += `"6. OTHER EXPENSES"\n`;
+          fileContent += `"ID","Expense Type","Vehicle","Amount (USD)","Vendor","Date","Description"\n`;
+          fileContent += expenses.map(e => `"${e.id}","${e.expenseType}","${e.vehicleNumber}",${e.amount},"${e.vendor}","${e.date}","${(e.description || '').replace(/"/g, '""')}"`).join('\n');
         } else if (format === 'EXCEL') {
-          mimeType = 'text/csv';
-          fileContent = `Report: ${reportName}\tGenerated At: ${new Date().toLocaleString()}\n`;
-          fileContent += `Metric\tValue\nTotal Fleet Vehicles\t5\nActive Drivers\t3\nCompleted Trips\t4\nScheduled Maintenance\t2\n`;
-        } else { // PDF
+          mimeType = 'text/tab-separated-values';
+          fileContent = `TRANSITOPS SYSTEM REPORT: COMPLETE FLEET & OPERATIONS AUDIT\n`;
+          fileContent += `Company Name\t${settings.companyName}\n`;
+          fileContent += `Tax ID\t${settings.taxId}\n`;
+          fileContent += `Generated At\t${new Date().toLocaleString()}\n\n`;
+
+          fileContent += `1. VEHICLES REGISTRY\n`;
+          fileContent += `ID\tVehicle Number\tPlate Number\tType\tBrand\tModel\tYear\tCapacity (KG)\tFuel Type\tStatus\tNotes\n`;
+          fileContent += vehicles.map(v => `${v.id}\t${v.vehicleNumber}\t${v.registrationNumber}\t${v.vehicleType}\t${v.brand}\t${v.model}\t${v.manufacturingYear}\t${v.capacity}\t${v.fuelType}\t${v.currentStatus}\t${v.notes || ''}`).join('\n') + `\n\n`;
+
+          fileContent += `2. ACTIVE DRIVERS REGISTRY\n`;
+          fileContent += `ID\tFull Name\tEmployee ID\tMobile\tEmail\tLicense Number\tLicense Class\tExpiry Date\tExperience (Yrs)\tStatus\n`;
+          fileContent += drivers.map(d => `${d.id}\t${d.fullName}\t${d.employeeId}\t${d.mobile}\t${d.email}\t${d.licenseNumber}\t${d.licenseCategory}\t${d.licenseExpiry}\t${d.experience}\t${d.driverStatus}`).join('\n') + `\n\n`;
+
+          fileContent += `3. DISPATCH TRIPS LOG\n`;
+          fileContent += `ID\tTrip ID\tOrigin\tDestination\tDriver\tVehicle\tCargo\tWeight (KG)\tDeparture\tArrival\tDistance (KM)\tFuel (L)\tPriority\tStatus\n`;
+          fileContent += trips.map(t => `${t.id}\t${t.tripId}\t${t.pickupLocation}\t${t.destination}\t${t.driverName || 'N/A'}\t${t.vehicleNumber || 'N/A'}\t${t.cargoType}\t${t.cargoWeight}\t${t.departureDate}\t${t.expectedArrival}\t${t.estimatedDistance}\t${t.estimatedFuel}\t${t.priority}\t${t.status}`).join('\n') + `\n\n`;
+
+          fileContent += `4. MAINTENANCE LOG\n`;
+          fileContent += `ID\tVehicle\tService Type\tWorkshop\tDate\tEst. Completion\tCost (USD)\tTechnician\tStatus\tNotes\n`;
+          fileContent += maintenance.map(m => `${m.id}\t${m.vehicleNumber}\t${m.serviceType}\t${m.workshop}\t${m.serviceDate}\t${m.estimatedCompletion}\t${m.cost}\t${m.technician}\t${m.status}\t${m.notes || ''}`).join('\n') + `\n\n`;
+
+          fileContent += `5. REFUELING RECEIPTS\n`;
+          fileContent += `ID\tVehicle\tDriver\tDate\tQuantity (L)\tCost (USD)\tStation\tOdometer\n`;
+          fileContent += fuel.map(f => `${f.id}\t${f.vehicleNumber}\t${f.driverName}\t${f.date}\t${f.fuelQuantity}\t${f.fuelCost}\t${f.fuelStation}\t${f.odometerReading}`).join('\n') + `\n\n`;
+
+          fileContent += `6. OTHER EXPENSES\n`;
+          fileContent += `ID\tExpense Type\tVehicle\tAmount (USD)\tVendor\tDate\tDescription\n`;
+          fileContent += expenses.map(e => `${e.id}\t${e.expenseType}\t${e.vehicleNumber}\t${e.amount}\t${e.vendor}\t${e.date}\t${e.description || ''}`).join('\n');
+        } else { // PDF (Plain-text high-fidelity structure representation)
           mimeType = 'text/plain';
-          fileContent = `==================================================\n`;
-          fileContent += `TRANSITOPS GLOBAL LOGISTICS - ANALYTICS REPORT\n`;
-          fileContent += `==================================================\n`;
-          fileContent += `Report Name: ${reportName}\n`;
-          fileContent += `Generated At: ${new Date().toLocaleString()}\n\n`;
-          fileContent += `SUMMARY METRICS:\n`;
-          fileContent += `- Total Fleet Vehicles: 5\n`;
-          fileContent += `- Active Drivers: 3\n`;
-          fileContent += `- Completed Trips: 4\n`;
-          fileContent += `- Scheduled Maintenance: 2\n\n`;
-          fileContent += `This is a high-fidelity generated preview of the TransitOps analytics report.`;
+          fileContent = `========================================================================================================================\n`;
+          fileContent += `                                     TRANSITOPS GLOBAL LOGISTICS SYSTEMS AUDIT REPORT\n`;
+          fileContent += `========================================================================================================================\n`;
+          fileContent += `Company Name : ${settings.companyName}\n`;
+          fileContent += `Tax ID       : ${settings.taxId}\n`;
+          fileContent += `Support      : ${settings.supportEmail} | ${settings.supportPhone}\n`;
+          fileContent += `Address      : ${settings.address}\n`;
+          fileContent += `Generated At : ${new Date().toLocaleString()}\n`;
+          fileContent += `------------------------------------------------------------------------------------------------------------------------\n\n`;
+
+          fileContent += `1. VEHICLE REGISTRY SUMMARY\n`;
+          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
+          fileContent += `ID        | Number   | Plate        | Brand & Model                | Type                     | Status\n`;
+          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
+          fileContent += vehicles.map(v => `${v.id.padEnd(9)} | ${v.vehicleNumber.padEnd(8)} | ${v.registrationNumber.padEnd(12)} | ${(v.brand + ' ' + v.model).padEnd(28)} | ${v.vehicleType.padEnd(24)} | ${v.currentStatus}`).join('\n') + `\n\n`;
+
+          fileContent += `2. ACTIVE DRIVERS REGISTRY\n`;
+          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
+          fileContent += `ID        | Full Name                | Employee ID | Mobile          | License Number | CDL Class    | Status\n`;
+          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
+          fileContent += drivers.map(d => `${d.id.padEnd(9)} | ${d.fullName.padEnd(24)} | ${d.employeeId.padEnd(11)} | ${d.mobile.padEnd(15)} | ${d.licenseNumber.padEnd(14)} | ${d.licenseCategory.padEnd(12)} | ${d.driverStatus}`).join('\n') + `\n\n`;
+
+          fileContent += `3. DISPATCH TRIPS LOG\n`;
+          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
+          fileContent += `Trip ID         | Origin                         | Destination                    | Cargo      | Weight  | Status\n`;
+          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
+          fileContent += trips.map(t => `${t.tripId.padEnd(15)} | ${t.pickupLocation.substring(0, 30).padEnd(30)} | ${t.destination.substring(0, 30).padEnd(30)} | ${t.cargoType.padEnd(10)} | ${(t.cargoWeight + ' kg').padEnd(7)} | ${t.status}`).join('\n') + `\n\n`;
+
+          fileContent += `4. MAINTENANCE LOG\n`;
+          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
+          fileContent += `Vehicle  | Service Type                             | Workshop                     | Date       | Cost     | Status\n`;
+          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
+          fileContent += maintenance.map(m => `${m.vehicleNumber.padEnd(8)} | ${m.serviceType.substring(0, 40).padEnd(40)} | ${m.workshop.padEnd(28)} | ${m.serviceDate} | ${('$' + m.cost).padEnd(8)} | ${m.status}`).join('\n') + `\n\n`;
+
+          fileContent += `5. REFUELING RECEIPTS\n`;
+          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
+          fileContent += `Vehicle  | Driver                   | Date       | Quantity (L) | Cost (USD) | Station\n`;
+          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
+          fileContent += fuel.map(f => `${f.vehicleNumber.padEnd(8)} | ${f.driverName.padEnd(24)} | ${f.date} | ${(f.fuelQuantity + ' L').padEnd(12)} | ${('$' + f.fuelCost).padEnd(10)} | ${f.fuelStation}`).join('\n') + `\n\n`;
+
+          fileContent += `6. ADMINISTRATIVE & OPERATIONAL EXPENSES\n`;
+          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
+          fileContent += `Vehicle  | Expense Type | Vendor                         | Amount     | Date       | Description\n`;
+          fileContent += `------------------------------------------------------------------------------------------------------------------------\n`;
+          fileContent += expenses.map(e => `${e.vehicleNumber.padEnd(8)} | ${e.expenseType.padEnd(12)} | ${e.vendor.padEnd(30)} | ${('$' + e.amount).padEnd(10)} | ${e.date} | ${e.description}`).join('\n') + `\n\n`;
+
+          fileContent += `========================================================================================================================\n`;
+          fileContent += `                                            END OF REPORT - TRANSITOPS LLC\n`;
+          fileContent += `========================================================================================================================`;
         }
 
         const blob = new Blob([fileContent], { type: mimeType });
@@ -229,7 +327,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, repor
 
         toast.success(
           'Document Export Successful',
-          `Downloaded "${fileName}" to your device.`
+          `Downloaded "${fileName}" containing active database records.`
         );
         setProgress(0);
         onClose();

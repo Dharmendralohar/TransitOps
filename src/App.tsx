@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Truck, Users, Navigation, Wrench, Fuel, BarChart2, Settings, Shield,
   Bell, Search, HelpCircle, LogOut, Key, User, Menu, X, ArrowUpRight,
-  MoreVertical, Mail
+  MoreVertical, Mail, ShieldAlert
 } from 'lucide-react';
 import { TransitOpsDB, Vehicle, Driver, Trip, MaintenanceRecord, FuelEntry, ExpenseRecord, AppUser, Role, OrganizationSettings } from './data/database';
 import { ToastProvider, useToast } from './components/Toast';
@@ -373,11 +373,33 @@ export const AppContent: React.FC = () => {
     { id: 'rbac', label: 'RBAC Security', icon: <Shield size={16} />, module: 'settings' },
   ];
 
+  const getFirstPermittedTab = (roleName: string) => {
+    const roleObj = roles.find(r => r.name === roleName);
+    if (!roleObj) return 'dashboard';
+    const first = sidebarTabs.find(tab => roleObj.permissions[tab.module]?.view);
+    return first ? first.id : 'dashboard';
+  };
+
   // Dynamically filter tabs according to active permissions
   const filteredSidebarTabs = sidebarTabs.filter(tab => canViewModule(tab.module));
 
   // Render Page Content
   const renderView = () => {
+    const tabConfig = sidebarTabs.find(t => t.id === activeTab);
+    if (tabConfig && !canViewModule(tabConfig.module)) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full text-center space-y-4 animate-fade-in p-8">
+          <div className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-2xl shadow-premium">
+            <ShieldAlert size={48} />
+          </div>
+          <h2 className="text-lg font-bold text-slate-200">Access Restricted</h2>
+          <p className="text-slate-400 max-w-sm text-xs leading-relaxed">
+            Your active operator role <strong>{currentUser.role}</strong> does not have permission to view the {tabConfig.label} module.
+          </p>
+        </div>
+      );
+    }
+
     switch (activeTab) {
       case 'dashboard':
         return (
@@ -408,6 +430,7 @@ export const AppContent: React.FC = () => {
             expenses={expenses}
             onUpdateVehicles={updateVehicles}
             onUpdateDrivers={updateDrivers}
+            rolePermissions={activeRoleObject?.permissions?.fleet}
           />
         );
       case 'drivers':
@@ -417,6 +440,7 @@ export const AppContent: React.FC = () => {
             vehicles={vehicles}
             onUpdateDrivers={updateDrivers}
             onUpdateVehicles={updateVehicles}
+            rolePermissions={activeRoleObject?.permissions?.drivers}
           />
         );
       case 'trips':
@@ -428,6 +452,7 @@ export const AppContent: React.FC = () => {
             onUpdateTrips={updateTrips}
             onUpdateDrivers={updateDrivers}
             onUpdateVehicles={updateVehicles}
+            rolePermissions={activeRoleObject?.permissions?.trips}
           />
         );
       case 'maintenance':
@@ -437,6 +462,7 @@ export const AppContent: React.FC = () => {
             vehicles={vehicles}
             onUpdateMaintenance={updateMaintenance}
             onUpdateVehicles={updateVehicles}
+            rolePermissions={activeRoleObject?.permissions?.maintenance}
           />
         );
       case 'fuel':
@@ -448,6 +474,7 @@ export const AppContent: React.FC = () => {
             drivers={drivers}
             onUpdateFuel={updateFuel}
             onUpdateExpenses={updateExpenses}
+            rolePermissions={activeRoleObject?.permissions?.fuel}
           />
         );
       case 'reports':
@@ -459,6 +486,7 @@ export const AppContent: React.FC = () => {
             maintenance={maintenance}
             fuel={fuel}
             expenses={expenses}
+            rolePermissions={activeRoleObject?.permissions?.reports}
           />
         );
       case 'settings':
@@ -505,6 +533,7 @@ export const AppContent: React.FC = () => {
           setIsLoggedIn(true);
           localStorage.setItem('to_logged_in_email', user.email);
           toast.success('Authentication Successful', `Welcome back, ${user.name}!`);
+          setActiveTab(getFirstPermittedTab(user.role));
         }}
       />
     );
@@ -582,7 +611,7 @@ export const AppContent: React.FC = () => {
           {/* Profile Dropdown popover */}
           {profileDropdownOpen && (
             <>
-              <div className="fixed inset-0 z-45" onClick={() => setProfileDropdownOpen(false)} />
+              <div className="fixed inset-0 z-40" onClick={() => setProfileDropdownOpen(false)} />
               <div className="absolute bottom-16 right-4 w-52 bg-slate-900 border border-slate-800 rounded-2xl shadow-premium py-2 z-50 animate-fade-in text-left">
                 {/* Active Role Selector Switcher */}
                 <div className="px-4 py-2 border-b border-slate-850 space-y-1 bg-slate-950/20">
@@ -595,6 +624,7 @@ export const AppContent: React.FC = () => {
                       setCurrentUser(prev => ({ ...prev, role: r }));
                       setProfileDropdownOpen(false);
                       toast.success('Access Role Switched', `Active security permissions adjusted to: ${r}`);
+                      setActiveTab(getFirstPermittedTab(r));
                     }}
                   >
                     {roles.map(role => (
@@ -690,7 +720,7 @@ export const AppContent: React.FC = () => {
               {/* Notification Popover Dropdown */}
               {notifDropdownOpen && (
                 <>
-                  <div className="fixed inset-0 z-45" onClick={() => setNotifDropdownOpen(false)} />
+                  <div className="fixed inset-0 z-40" onClick={() => setNotifDropdownOpen(false)} />
                   <div className="absolute right-0 mt-2 w-80 bg-slate-900 border border-slate-850 rounded-2xl shadow-premium py-3 z-50 animate-fade-in text-left space-y-2">
                     <div className="px-4 pb-2 border-b border-slate-850 flex justify-between items-center">
                       <span className="font-bold text-slate-200">Alert Center</span>

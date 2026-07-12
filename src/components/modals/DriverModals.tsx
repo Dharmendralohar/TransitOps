@@ -368,9 +368,9 @@ interface DriverDetailsProps {
   isOpen: boolean;
   onClose: () => void;
   driver: Driver;
-  onEdit: () => void;
-  onAssignVehicle: () => void;
-  onRenewLicense: () => void;
+  onEdit?: () => void;
+  onAssignVehicle?: () => void;
+  onRenewLicense?: () => void;
 }
 
 export const DriverDetailsModal: React.FC<DriverDetailsProps> = ({
@@ -455,20 +455,22 @@ export const DriverDetailsModal: React.FC<DriverDetailsProps> = ({
               <span className="text-[10px] text-slate-500 uppercase font-semibold">License Expiration Date</span>
               <p className="text-slate-200 font-bold">{driver.licenseExpiry}</p>
             </div>
-            {isLicenseNearExpiry() ? (
-              <button
-                onClick={onRenewLicense}
-                className="px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 rounded-lg font-bold flex items-center gap-1 transition animate-pulse"
-              >
-                <ShieldAlert size={12} /> Renew Now
-              </button>
-            ) : (
-              <button
-                onClick={onRenewLicense}
-                className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-semibold transition"
-              >
-                Trigger Renewal
-              </button>
+            {onRenewLicense && (
+              isLicenseNearExpiry() ? (
+                <button
+                  onClick={onRenewLicense}
+                  className="px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 rounded-lg font-bold flex items-center gap-1 transition animate-pulse"
+                >
+                  <ShieldAlert size={12} /> Renew Now
+                </button>
+              ) : (
+                <button
+                  onClick={onRenewLicense}
+                  className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-semibold transition"
+                >
+                  Trigger Renewal
+                </button>
+              )
             )}
           </div>
         </div>
@@ -485,12 +487,14 @@ export const DriverDetailsModal: React.FC<DriverDetailsProps> = ({
                   {driver.assignedVehicleNumber ? `Truck ${driver.assignedVehicleNumber}` : 'Unassigned'}
                 </p>
               </div>
-              <button
-                onClick={onAssignVehicle}
-                className="px-3 py-1 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-lg font-semibold transition"
-              >
-                {driver.assignedVehicleId ? 'Reassign Truck' : 'Assign Truck'}
-              </button>
+              {onAssignVehicle && (
+                <button
+                  onClick={onAssignVehicle}
+                  className="px-3 py-1 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/20 rounded-lg font-semibold transition"
+                >
+                  {driver.assignedVehicleId ? 'Reassign Truck' : 'Assign Truck'}
+                </button>
+              )}
             </div>
 
             {/* Emergency Contact */}
@@ -501,7 +505,7 @@ export const DriverDetailsModal: React.FC<DriverDetailsProps> = ({
 
             {/* Address */}
             {driver.address && (
-              <div className="p-3 bg-slate-900/60 border border-slate-805 rounded-xl space-y-0.5">
+              <div className="p-3 bg-slate-900/60 border border-slate-855 rounded-xl space-y-0.5">
                 <span className="text-[10px] text-slate-500 uppercase font-semibold flex items-center gap-1"><MapPin size={10} /> Residence Address</span>
                 <p className="text-slate-300">{driver.address}</p>
               </div>
@@ -510,12 +514,14 @@ export const DriverDetailsModal: React.FC<DriverDetailsProps> = ({
         </div>
 
         <ModalFooter>
-          <button
-            onClick={onEdit}
-            className="px-4 py-2 font-semibold bg-brand-600 hover:bg-brand-500 text-white rounded-xl transition"
-          >
-            Edit Operator Profile
-          </button>
+          {onEdit && (
+            <button
+              onClick={onEdit}
+              className="px-4 py-2 font-semibold bg-brand-600 hover:bg-brand-500 text-white rounded-xl transition"
+            >
+              Edit Operator Profile
+            </button>
+          )}
           <button
             onClick={onClose}
             className="px-4 py-2 font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition"

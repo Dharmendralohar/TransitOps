@@ -12,6 +12,14 @@ interface DriversViewProps {
   vehicles: Vehicle[];
   onUpdateDrivers: (data: Driver[]) => void;
   onUpdateVehicles: (data: Vehicle[]) => void;
+  rolePermissions?: {
+    view: boolean;
+    create: boolean;
+    edit: boolean;
+    delete: boolean;
+    approve: boolean;
+    export: boolean;
+  };
 }
 
 export const DriversView: React.FC<DriversViewProps> = ({
@@ -19,7 +27,11 @@ export const DriversView: React.FC<DriversViewProps> = ({
   vehicles,
   onUpdateDrivers,
   onUpdateVehicles,
+  rolePermissions,
 }) => {
+  const canCreate = rolePermissions ? rolePermissions.create : true;
+  const canEdit = rolePermissions ? rolePermissions.edit : true;
+  const canDelete = rolePermissions ? rolePermissions.delete : true;
   // Modal states
   const [selectedDriver, setSelectedDriver] = useState<Driver | undefined>(undefined);
   const [isAddEditOpen, setIsAddEditOpen] = useState(false);
@@ -316,16 +328,18 @@ export const DriversView: React.FC<DriversViewProps> = ({
         </div>
 
         {/* Add Driver Button */}
-        <button
-          onClick={handleOpenAdd}
-          className="flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl transition shadow-premium"
-        >
-          <Plus size={16} /> Register Operator
-        </button>
+        {canCreate && (
+          <button
+            onClick={handleOpenAdd}
+            className="flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl transition shadow-premium"
+          >
+            <Plus size={16} /> Register Operator
+          </button>
+        )}
       </div>
 
       {/* Bulk actions */}
-      {selectedIds.length > 0 && (
+      {selectedIds.length > 0 && canEdit && (
         <div className="flex items-center justify-between p-3 bg-slate-900 border border-slate-800 rounded-xl animate-fade-in">
           <span className="text-slate-300 font-medium">{selectedIds.length} operators selected</span>
           <div className="flex gap-2">
@@ -438,31 +452,39 @@ export const DriversView: React.FC<DriversViewProps> = ({
                           >
                             <Eye size={12} /> View Dossier
                           </button>
-                          <button
-                            onClick={() => handleOpenEdit(d)}
-                            className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
-                          >
-                            <Edit2 size={12} /> Edit Profile
-                          </button>
-                          <button
-                            onClick={() => handleOpenAssign(d)}
-                            className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
-                          >
-                            <Link size={12} /> Link Vehicle
-                          </button>
-                          <button
-                            onClick={() => handleOpenRenewal(d)}
-                            className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
-                          >
-                            <FileSignature size={12} /> Renew CDL
-                          </button>
-                          <div className="border-t border-slate-800 my-1" />
-                          <button
-                            onClick={() => handleOpenDelete(d)}
-                            className="w-full px-4 py-2 hover:bg-slate-800 text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 transition"
-                          >
-                            <Trash2 size={12} /> Delete Operator
-                          </button>
+                          {canEdit && (
+                            <>
+                              <button
+                                onClick={() => handleOpenEdit(d)}
+                                className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
+                              >
+                                <Edit2 size={12} /> Edit Profile
+                              </button>
+                              <button
+                                onClick={() => handleOpenAssign(d)}
+                                className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
+                              >
+                                <Link size={12} /> Link Vehicle
+                              </button>
+                              <button
+                                onClick={() => handleOpenRenewal(d)}
+                                className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
+                              >
+                                <FileSignature size={12} /> Renew CDL
+                              </button>
+                            </>
+                          )}
+                          {canDelete && (
+                            <>
+                              <div className="border-t border-slate-800 my-1" />
+                              <button
+                                onClick={() => handleOpenDelete(d)}
+                                className="w-full px-4 py-2 hover:bg-slate-800 text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 transition"
+                              >
+                                <Trash2 size={12} /> Delete Operator
+                              </button>
+                            </>
+                          )}
                         </div>
                       </>
                     )}
@@ -513,18 +535,18 @@ export const DriversView: React.FC<DriversViewProps> = ({
             isOpen={isDetailsOpen}
             onClose={() => setIsDetailsOpen(false)}
             driver={selectedDriver}
-            onEdit={() => {
+            onEdit={canEdit ? () => {
               setIsDetailsOpen(false);
               handleOpenEdit(selectedDriver);
-            }}
-            onAssignVehicle={() => {
+            } : undefined}
+            onAssignVehicle={canEdit ? () => {
               setIsDetailsOpen(false);
               handleOpenAssign(selectedDriver);
-            }}
-            onRenewLicense={() => {
+            } : undefined}
+            onRenewLicense={canEdit ? () => {
               setIsDetailsOpen(false);
               handleOpenRenewal(selectedDriver);
-            }}
+            } : undefined}
           />
 
           <AssignVehicleModal

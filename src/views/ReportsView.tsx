@@ -12,6 +12,14 @@ interface ReportsViewProps {
   maintenance: MaintenanceRecord[];
   fuel: FuelEntry[];
   expenses: ExpenseRecord[];
+  rolePermissions?: {
+    view: boolean;
+    create: boolean;
+    edit: boolean;
+    delete: boolean;
+    approve: boolean;
+    export: boolean;
+  };
 }
 
 export const ReportsView: React.FC<ReportsViewProps> = ({
@@ -21,7 +29,9 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
   maintenance,
   fuel,
   expenses,
+  rolePermissions,
 }) => {
+  const canExport = rolePermissions ? rolePermissions.export : true;
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState({
@@ -98,12 +108,14 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
           >
             <Filter size={14} /> Filter Query
           </button>
-          <button
-            onClick={() => setExportOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-bold transition"
-          >
-            <Download size={14} /> Export Document
-          </button>
+          {canExport && (
+            <button
+              onClick={() => setExportOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-bold transition"
+            >
+              <Download size={14} /> Export Document
+            </button>
+          )}
         </div>
       </div>
 

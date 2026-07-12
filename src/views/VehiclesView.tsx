@@ -16,6 +16,14 @@ interface VehiclesViewProps {
   expenses: ExpenseRecord[];
   onUpdateVehicles: (data: Vehicle[]) => void;
   onUpdateDrivers: (data: Driver[]) => void;
+  rolePermissions?: {
+    view: boolean;
+    create: boolean;
+    edit: boolean;
+    delete: boolean;
+    approve: boolean;
+    export: boolean;
+  };
 }
 
 export const VehiclesView: React.FC<VehiclesViewProps> = ({
@@ -27,7 +35,11 @@ export const VehiclesView: React.FC<VehiclesViewProps> = ({
   expenses,
   onUpdateVehicles,
   onUpdateDrivers,
+  rolePermissions,
 }) => {
+  const canCreate = rolePermissions ? rolePermissions.create : true;
+  const canEdit = rolePermissions ? rolePermissions.edit : true;
+  const canDelete = rolePermissions ? rolePermissions.delete : true;
   // Modal states
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | undefined>(undefined);
   const [isAddEditOpen, setIsAddEditOpen] = useState(false);
@@ -332,16 +344,18 @@ export const VehiclesView: React.FC<VehiclesViewProps> = ({
         </div>
 
         {/* Add Button */}
-        <button
-          onClick={handleOpenAdd}
-          className="flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl transition shadow-premium"
-        >
-          <Plus size={16} /> Register Truck
-        </button>
+        {canCreate && (
+          <button
+            onClick={handleOpenAdd}
+            className="flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl transition shadow-premium"
+          >
+            <Plus size={16} /> Register Truck
+          </button>
+        )}
       </div>
 
       {/* Bulk Action Controls */}
-      {selectedIds.length > 0 && (
+      {selectedIds.length > 0 && canEdit && (
         <div className="flex items-center justify-between p-3 bg-slate-900 border border-slate-800 rounded-xl animate-fade-in">
           <span className="text-slate-300 font-medium">{selectedIds.length} vehicles selected</span>
           <div className="flex gap-2">
@@ -454,37 +468,45 @@ export const VehiclesView: React.FC<VehiclesViewProps> = ({
                           >
                             <Eye size={12} /> View Specs
                           </button>
-                          <button
-                            onClick={() => handleOpenEdit(v)}
-                            className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
-                          >
-                            <Edit2 size={12} /> Edit Profile
-                          </button>
-                          <button
-                            onClick={() => handleDuplicate(v)}
-                            className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
-                          >
-                            <Copy size={12} /> Duplicate
-                          </button>
-                          <button
-                            onClick={() => handleOpenAssign(v)}
-                            className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
-                          >
-                            <UserPlus size={12} /> Assign Operator
-                          </button>
+                          {canEdit && (
+                            <>
+                              <button
+                                onClick={() => handleOpenEdit(v)}
+                                className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
+                              >
+                                <Edit2 size={12} /> Edit Profile
+                              </button>
+                              <button
+                                onClick={() => handleDuplicate(v)}
+                                className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
+                              >
+                                <Copy size={12} /> Duplicate
+                              </button>
+                              <button
+                                onClick={() => handleOpenAssign(v)}
+                                className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
+                              >
+                                <UserPlus size={12} /> Assign Operator
+                              </button>
+                            </>
+                          )}
                           <button
                             onClick={() => handleOpenHistory(v)}
                             className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
                           >
                             <History size={12} /> History Timeline
                           </button>
-                          <div className="border-t border-slate-800 my-1" />
-                          <button
-                            onClick={() => handleOpenDelete(v)}
-                            className="w-full px-4 py-2 hover:bg-slate-800 text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 transition"
-                          >
-                            <Trash2 size={12} /> Delete Truck
-                          </button>
+                          {canDelete && (
+                            <>
+                              <div className="border-t border-slate-800 my-1" />
+                              <button
+                                onClick={() => handleOpenDelete(v)}
+                                className="w-full px-4 py-2 hover:bg-slate-800 text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 transition"
+                              >
+                                <Trash2 size={12} /> Delete Truck
+                              </button>
+                            </>
+                          )}
                         </div>
                       </>
                     )}
@@ -535,14 +557,14 @@ export const VehiclesView: React.FC<VehiclesViewProps> = ({
             isOpen={isDetailsOpen}
             onClose={() => setIsDetailsOpen(false)}
             vehicle={selectedVehicle}
-            onEdit={() => {
+            onEdit={canEdit ? () => {
               setIsDetailsOpen(false);
               handleOpenEdit(selectedVehicle);
-            }}
-            onAssignDriver={() => {
+            } : undefined}
+            onAssignDriver={canEdit ? () => {
               setIsDetailsOpen(false);
               handleOpenAssign(selectedVehicle);
-            }}
+            } : undefined}
           />
 
           <AssignDriverModal

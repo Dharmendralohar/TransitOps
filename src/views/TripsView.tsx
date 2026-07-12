@@ -15,6 +15,14 @@ interface TripsViewProps {
   onUpdateTrips: (data: Trip[]) => void;
   onUpdateDrivers: (data: Driver[]) => void;
   onUpdateVehicles: (data: Vehicle[]) => void;
+  rolePermissions?: {
+    view: boolean;
+    create: boolean;
+    edit: boolean;
+    delete: boolean;
+    approve: boolean;
+    export: boolean;
+  };
 }
 
 export const TripsView: React.FC<TripsViewProps> = ({
@@ -24,8 +32,12 @@ export const TripsView: React.FC<TripsViewProps> = ({
   onUpdateTrips,
   onUpdateDrivers,
   onUpdateVehicles,
+  rolePermissions,
 }) => {
   const toast = useToast();
+  const canCreate = rolePermissions ? rolePermissions.create : true;
+  const canEdit = rolePermissions ? rolePermissions.edit : true;
+  const canDelete = rolePermissions ? rolePermissions.delete : true;
 
   // Modal states
   const [selectedTrip, setSelectedTrip] = useState<Trip | undefined>(undefined);
@@ -316,12 +328,14 @@ export const TripsView: React.FC<TripsViewProps> = ({
         </div>
 
         {/* Schedule trip Button */}
-        <button
-          onClick={handleOpenAdd}
-          className="flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl transition shadow-premium"
-        >
-          <Plus size={16} /> Dispatch Route
-        </button>
+        {canCreate && (
+          <button
+            onClick={handleOpenAdd}
+            className="flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl transition shadow-premium"
+          >
+            <Plus size={16} /> Dispatch Route
+          </button>
+        )}
       </div>
 
       {/* Table */}
@@ -389,48 +403,56 @@ export const TripsView: React.FC<TripsViewProps> = ({
                     {activeMenuId === t.id && (
                       <>
                         <div className="fixed inset-0 z-20" onClick={() => setActiveMenuId(null)} />
-                        <div className="absolute right-4 mt-1 w-44 bg-slate-900 border border-slate-800 rounded-xl shadow-premium z-35 py-1.5 animate-fade-in text-left">
+                        <div className="absolute right-4 mt-1 w-44 bg-slate-900 border border-slate-800 rounded-xl shadow-premium z-30 py-1.5 animate-fade-in text-left">
                           <button
                             onClick={() => handleOpenDetails(t)}
                             className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
                           >
                             <Eye size={12} /> View Details
                           </button>
-                          <button
-                            onClick={() => handleOpenEdit(t)}
-                            className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
-                          >
-                            <Edit2 size={12} /> Edit Details
-                          </button>
-                          <button
-                            onClick={() => handleOpenStatus(t)}
-                            className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
-                          >
-                            <Calendar size={12} /> Update Status
-                          </button>
-                          {(t.status === 'On Route' || t.status === 'Dispatched') && (
+                          {canEdit && (
                             <>
                               <button
-                                onClick={() => handleCompleteTrip(t)}
-                                className="w-full px-4 py-2 hover:bg-slate-800 text-emerald-400 flex items-center gap-2 transition"
+                                onClick={() => handleOpenEdit(t)}
+                                className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
                               >
-                                <CheckCircle size={12} /> Complete Route
+                                <Edit2 size={12} /> Edit Details
                               </button>
                               <button
-                                onClick={() => handleCancelTrip(t)}
-                                className="w-full px-4 py-2 hover:bg-slate-800 text-rose-455 flex items-center gap-2 transition"
+                                onClick={() => handleOpenStatus(t)}
+                                className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
                               >
-                                <XCircle size={12} /> Cancel Dispatch
+                                <Calendar size={12} /> Update Status
+                              </button>
+                              {(t.status === 'On Route' || t.status === 'Dispatched') && (
+                                <>
+                                  <button
+                                    onClick={() => handleCompleteTrip(t)}
+                                    className="w-full px-4 py-2 hover:bg-slate-800 text-emerald-400 flex items-center gap-2 transition"
+                                  >
+                                    <CheckCircle size={12} /> Complete Route
+                                  </button>
+                                  <button
+                                    onClick={() => handleCancelTrip(t)}
+                                    className="w-full px-4 py-2 hover:bg-slate-800 text-rose-455 flex items-center gap-2 transition"
+                                  >
+                                    <XCircle size={12} /> Cancel Dispatch
+                                  </button>
+                                </>
+                              )}
+                            </>
+                          )}
+                          {canDelete && (
+                            <>
+                              <div className="border-t border-slate-800 my-1" />
+                              <button
+                                onClick={() => handleOpenDelete(t)}
+                                className="w-full px-4 py-2 hover:bg-slate-800 text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 transition"
+                              >
+                                <Trash2 size={12} /> Delete Dispatch
                               </button>
                             </>
                           )}
-                          <div className="border-t border-slate-800 my-1" />
-                          <button
-                            onClick={() => handleOpenDelete(t)}
-                            className="w-full px-4 py-2 hover:bg-slate-800 text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 transition"
-                          >
-                            <Trash2 size={12} /> Delete Dispatch
-                          </button>
                         </div>
                       </>
                     )}
@@ -482,14 +504,14 @@ export const TripsView: React.FC<TripsViewProps> = ({
             isOpen={isDetailsOpen}
             onClose={() => setIsDetailsOpen(false)}
             trip={selectedTrip}
-            onEdit={() => {
+            onEdit={canEdit ? () => {
               setIsDetailsOpen(false);
               handleOpenEdit(selectedTrip);
-            }}
-            onUpdateStatus={() => {
+            } : undefined}
+            onUpdateStatus={canEdit ? () => {
               setIsDetailsOpen(false);
               handleOpenStatus(selectedTrip);
-            }}
+            } : undefined}
           />
 
           <UpdateTripStatusModal

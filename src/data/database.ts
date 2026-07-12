@@ -482,17 +482,25 @@ const initialUsers: AppUser[] = [
     id: "u-3",
     name: "Lori Collins",
     email: "l.collins@transitops.com",
-    role: "Maintenance Coordinator",
+    role: "Fleet Manager",
     status: "Active",
     createdAt: "2025-10-10"
   },
   {
     id: "u-4",
-    name: "Guest Operator",
-    email: "guest@transitops.com",
-    role: "Viewer",
-    status: "Inactive",
+    name: "David Chen",
+    email: "d.chen@transitops.com",
+    role: "Safety Officer",
+    status: "Active",
     createdAt: "2026-02-01"
+  },
+  {
+    id: "u-5",
+    name: "Marcus Sterling",
+    email: "m.sterling@transitops.com",
+    role: "Financial Analyst",
+    status: "Active",
+    createdAt: "2026-03-12"
   }
 ];
 
@@ -513,47 +521,62 @@ const initialRoles: Role[] = [
     }
   },
   {
-    id: "role-dispatcher",
-    name: "Dispatcher",
-    description: "Manage trips, drivers, and fleet allocations. Cannot edit financial rates or settings.",
+    id: "role-fleet-mgr",
+    name: "Fleet Manager",
+    description: "Full access to Fleet, Drivers, Maintenance, and Analytics reports. Restricted from Trips and Finances.",
     permissions: {
-      dashboard: { view: true, create: false, edit: false, delete: false, approve: false, export: true },
-      fleet: { view: true, create: false, edit: true, delete: false, approve: true, export: true },
-      drivers: { view: true, create: true, edit: true, delete: false, approve: true, export: true },
-      trips: { view: true, create: true, edit: true, delete: true, approve: true, export: true },
-      maintenance: { view: true, create: false, edit: false, delete: false, approve: false, export: false },
-      fuel: { view: true, create: true, edit: true, delete: false, approve: false, export: true },
-      reports: { view: true, create: false, edit: false, delete: false, approve: false, export: true },
+      dashboard: { view: false, create: false, edit: false, delete: false, approve: false, export: false },
+      fleet: { view: true, create: true, edit: true, delete: true, approve: true, export: true },
+      drivers: { view: true, create: true, edit: true, delete: true, approve: true, export: true },
+      trips: { view: false, create: false, edit: false, delete: false, approve: false, export: false },
+      maintenance: { view: true, create: true, edit: true, delete: true, approve: true, export: true },
+      fuel: { view: false, create: false, edit: false, delete: false, approve: false, export: false },
+      reports: { view: true, create: true, edit: true, delete: true, approve: true, export: true },
       settings: { view: false, create: false, edit: false, delete: false, approve: false, export: false }
     }
   },
   {
-    id: "role-maint",
-    name: "Maintenance Tech",
-    description: "Focuses on fleet servicing schedules, maintenance reports, workshop transactions.",
+    id: "role-dispatcher",
+    name: "Dispatcher",
+    description: "Access to Dashboard and Trips (Full). View-only access to Fleet. Restricted from all other modules.",
     permissions: {
-      dashboard: { view: true, create: false, edit: false, delete: false, approve: false, export: false },
+      dashboard: { view: true, create: true, edit: true, delete: true, approve: true, export: true },
+      fleet: { view: true, create: false, edit: false, delete: false, approve: false, export: false },
+      drivers: { view: false, create: false, edit: false, delete: false, approve: false, export: false },
+      trips: { view: true, create: true, edit: true, delete: true, approve: true, export: true },
+      maintenance: { view: false, create: false, edit: false, delete: false, approve: false, export: false },
+      fuel: { view: false, create: false, edit: false, delete: false, approve: false, export: false },
+      reports: { view: false, create: false, edit: false, delete: false, approve: false, export: false },
+      settings: { view: false, create: false, edit: false, delete: false, approve: false, export: false }
+    }
+  },
+  {
+    id: "role-safety-off",
+    name: "Safety Officer",
+    description: "Full access to Drivers. View-only access to Trips. Restricted from all other modules.",
+    permissions: {
+      dashboard: { view: false, create: false, edit: false, delete: false, approve: false, export: false },
+      fleet: { view: false, create: false, edit: false, delete: false, approve: false, export: false },
+      drivers: { view: true, create: true, edit: true, delete: true, approve: true, export: true },
+      trips: { view: true, create: false, edit: false, delete: false, approve: false, export: false },
+      maintenance: { view: false, create: false, edit: false, delete: false, approve: false, export: false },
+      fuel: { view: false, create: false, edit: false, delete: false, approve: false, export: false },
+      reports: { view: false, create: false, edit: false, delete: false, approve: false, export: false },
+      settings: { view: false, create: false, edit: false, delete: false, approve: false, export: false }
+    }
+  },
+  {
+    id: "role-fin-analyst",
+    name: "Financial Analyst",
+    description: "Full access to Fuel/Expenses and Analytics reports. View-only access to Fleet. Restricted from all other modules.",
+    permissions: {
+      dashboard: { view: false, create: false, edit: false, delete: false, approve: false, export: false },
       fleet: { view: true, create: false, edit: false, delete: false, approve: false, export: false },
       drivers: { view: false, create: false, edit: false, delete: false, approve: false, export: false },
       trips: { view: false, create: false, edit: false, delete: false, approve: false, export: false },
-      maintenance: { view: true, create: true, edit: true, delete: true, approve: true, export: true },
-      fuel: { view: true, create: true, edit: true, delete: false, approve: false, export: false },
-      reports: { view: true, create: false, edit: false, delete: false, approve: false, export: true },
-      settings: { view: false, create: false, edit: false, delete: false, approve: false, export: false }
-    }
-  },
-  {
-    id: "role-viewer",
-    name: "Viewer",
-    description: "Read-only access to standard operational dashboards and basic reporting structures.",
-    permissions: {
-      dashboard: { view: true, create: false, edit: false, delete: false, approve: false, export: false },
-      fleet: { view: true, create: false, edit: false, delete: false, approve: false, export: false },
-      drivers: { view: true, create: false, edit: false, delete: false, approve: false, export: false },
-      trips: { view: true, create: false, edit: false, delete: false, approve: false, export: false },
-      maintenance: { view: true, create: false, edit: false, delete: false, approve: false, export: false },
-      fuel: { view: true, create: false, edit: false, delete: false, approve: false, export: false },
-      reports: { view: true, create: false, edit: false, delete: false, approve: false, export: false },
+      maintenance: { view: false, create: false, edit: false, delete: false, approve: false, export: false },
+      fuel: { view: true, create: true, edit: true, delete: true, approve: true, export: true },
+      reports: { view: true, create: true, edit: true, delete: true, approve: true, export: true },
       settings: { view: false, create: false, edit: false, delete: false, approve: false, export: false }
     }
   }
@@ -662,7 +685,7 @@ export class TransitOpsDB {
   }
 
   static getUsers(): AppUser[] {
-    const val = localStorage.getItem("to_users");
+    const val = localStorage.getItem("to_users_v4");
     if (!val) {
       this.saveUsers(initialUsers);
       return initialUsers;
@@ -670,11 +693,11 @@ export class TransitOpsDB {
     return JSON.parse(val);
   }
   static saveUsers(data: AppUser[]) {
-    localStorage.setItem("to_users", JSON.stringify(data));
+    localStorage.setItem("to_users_v4", JSON.stringify(data));
   }
 
   static getRoles(): Role[] {
-    const val = localStorage.getItem("to_roles");
+    const val = localStorage.getItem("to_roles_v4");
     if (!val) {
       this.saveRoles(initialRoles);
       return initialRoles;
@@ -682,7 +705,7 @@ export class TransitOpsDB {
     return JSON.parse(val);
   }
   static saveRoles(data: Role[]) {
-    localStorage.setItem("to_roles", JSON.stringify(data));
+    localStorage.setItem("to_roles_v4", JSON.stringify(data));
   }
 
   static getOrgSettings(): OrganizationSettings {

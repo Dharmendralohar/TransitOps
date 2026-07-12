@@ -14,6 +14,14 @@ interface FuelExpensesViewProps {
   drivers: Driver[];
   onUpdateFuel: (data: FuelEntry[]) => void;
   onUpdateExpenses: (data: ExpenseRecord[]) => void;
+  rolePermissions?: {
+    view: boolean;
+    create: boolean;
+    edit: boolean;
+    delete: boolean;
+    approve: boolean;
+    export: boolean;
+  };
 }
 
 export const FuelExpensesView: React.FC<FuelExpensesViewProps> = ({
@@ -23,7 +31,11 @@ export const FuelExpensesView: React.FC<FuelExpensesViewProps> = ({
   drivers,
   onUpdateFuel,
   onUpdateExpenses,
+  rolePermissions,
 }) => {
+  const canCreate = rolePermissions ? rolePermissions.create : true;
+  const canEdit = rolePermissions ? rolePermissions.edit : true;
+  const canDelete = rolePermissions ? rolePermissions.delete : true;
   // Tabs: 'fuel' or 'expenses'
   const [activeTab, setActiveTab] = useState<'fuel' | 'expenses'>('fuel');
 
@@ -223,20 +235,22 @@ export const FuelExpensesView: React.FC<FuelExpensesViewProps> = ({
         </div>
 
         {/* Add Actions */}
-        {activeTab === 'fuel' ? (
-          <button
-            onClick={handleOpenAddFuel}
-            className="flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl transition"
-          >
-            <Plus size={16} /> Log Refueling
-          </button>
-        ) : (
-          <button
-            onClick={handleOpenAddExpense}
-            className="flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl transition"
-          >
-            <Plus size={16} /> Log Expense
-          </button>
+        {canCreate && (
+          activeTab === 'fuel' ? (
+            <button
+              onClick={handleOpenAddFuel}
+              className="flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl transition"
+            >
+              <Plus size={16} /> Log Refueling
+            </button>
+          ) : (
+            <button
+              onClick={handleOpenAddExpense}
+              className="flex items-center gap-1.5 px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl transition"
+            >
+              <Plus size={16} /> Log Expense
+            </button>
+          )
         )}
       </div>
 
@@ -295,19 +309,25 @@ export const FuelExpensesView: React.FC<FuelExpensesViewProps> = ({
                           <>
                             <div className="fixed inset-0 z-20" onClick={() => setActiveMenuId(null)} />
                             <div className="absolute right-4 mt-1 w-44 bg-slate-900 border border-slate-800 rounded-xl shadow-premium z-30 py-1.5 animate-fade-in text-left">
-                              <button
-                                onClick={() => handleOpenEditFuel(f)}
-                                className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
-                              >
-                                <Edit2 size={12} /> Edit Entry
-                              </button>
-                              <div className="border-t border-slate-800 my-1" />
-                              <button
-                                onClick={() => handleOpenDelete(f)}
-                                className="w-full px-4 py-2 hover:bg-slate-800 text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 transition"
-                              >
-                                <Trash2 size={12} /> Delete Entry
-                              </button>
+                              {canEdit && (
+                                <button
+                                  onClick={() => handleOpenEditFuel(f)}
+                                  className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
+                                >
+                                  <Edit2 size={12} /> Edit Entry
+                                </button>
+                              )}
+                              {canDelete && (
+                                <>
+                                  <div className="border-t border-slate-800 my-1" />
+                                  <button
+                                    onClick={() => handleOpenDelete(f)}
+                                    className="w-full px-4 py-2 hover:bg-slate-800 text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 transition"
+                                  >
+                                    <Trash2 size={12} /> Delete Entry
+                                  </button>
+                                </>
+                              )}
                             </div>
                           </>
                         )}
@@ -381,19 +401,25 @@ export const FuelExpensesView: React.FC<FuelExpensesViewProps> = ({
                               >
                                 <Eye size={12} /> View Details
                               </button>
-                              <button
-                                onClick={() => handleOpenEditExpense(e)}
-                                className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
-                              >
-                                <Edit2 size={12} /> Edit Details
-                              </button>
-                              <div className="border-t border-slate-800 my-1" />
-                              <button
-                                onClick={() => handleOpenDelete(e)}
-                                className="w-full px-4 py-2 hover:bg-slate-800 text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 transition"
-                              >
-                                <Trash2 size={12} /> Delete Record
-                              </button>
+                              {canEdit && (
+                                <button
+                                  onClick={() => handleOpenEditExpense(e)}
+                                  className="w-full px-4 py-2 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2 transition"
+                                >
+                                  <Edit2 size={12} /> Edit Details
+                                </button>
+                              )}
+                              {canDelete && (
+                                <>
+                                  <div className="border-t border-slate-800 my-1" />
+                                  <button
+                                    onClick={() => handleOpenDelete(e)}
+                                    className="w-full px-4 py-2 hover:bg-slate-800 text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 transition"
+                                  >
+                                    <Trash2 size={12} /> Delete Record
+                                  </button>
+                                </>
+                              )}
                             </div>
                           </>
                         )}
