@@ -15,8 +15,11 @@
             <option value="Other">Other</option>
           </select>
         </div>
-        <button class="btn-refresh" @click="loadAnalyticsData" :disabled="loading">
-          {{ loading ? 'Updating...' : '🔄 Refresh Data' }}
+        <button class="btn-refresh" @click="loadAnalyticsData" :disabled="loading" style="margin-right: 8px;">
+          {{ loading ? 'Updating...' : '🔄 Refresh' }}
+        </button>
+        <button class="btn-pdf" @click="exportPDF">
+          📄 Export PDF
         </button>
       </div>
     </div>
@@ -280,6 +283,9 @@ export default {
     },
     formatNumber(val) {
       return Math.round(val || 0).toLocaleString()
+    },
+    exportPDF() {
+      window.print();
     }
   }
 }
@@ -687,5 +693,68 @@ export default {
   color: currentColor;
   font-size: 18px;
   cursor: pointer;
+}
+.btn-pdf {
+  background-color: #10b981;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-pdf:hover {
+  background-color: #059669;
+}
+
+@media print {
+  /* Hide interactive elements, sidebars, header and filter bar */
+  header.top-navbar,
+  aside.sidebar,
+  .filter-bar,
+  .btn-refresh,
+  .btn-pdf,
+  .sidebar-footer {
+    display: none !important;
+  }
+
+  /* Reset body/layout backgrounds and padding for print */
+  body, .main-layout, .content-container, .analytics-view {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    box-shadow: none !important;
+  }
+
+  .kpi-card {
+    background-color: #f3f4f6 !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: none !important;
+  }
+
+  .kpi-value, .kpi-label, .kpi-subtext, .kpi-unit {
+    color: #000000 !important;
+  }
+
+  .chart-card {
+    background-color: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+
+  .chart-title, .chart-subtitle, .vehicle-name, .vehicle-value {
+    color: #000000 !important;
+  }
+
+  .bar-chart-y-axis span {
+    color: #4b5563 !important;
+  }
 }
 </style>
