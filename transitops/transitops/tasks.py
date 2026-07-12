@@ -1,45 +1,36 @@
 import frappe
 from frappe.utils import add_days, getdate, today
 
-def send_license_expiry_reminders():
-	settings = frappe.get_single("TransitOps Settings")
-	if not settings.enable_license_reminders:
-		return
+def get_license_reminder_recipients(settings):
+	recipients = {r.strip() for r in (settings.reminder_recipients or "").split(",") if r.strip()}
 
-	days = settings.license_reminder_days or 30
-	recipients_list = [r.strip() for r in (settings.reminder_recipients or "").split(",") if r.strip()]
-
-	if not recipients_list:
-		# Default to users with the 'Safety Officer' role
+	if not recipients:
 		safety_officers = frappe.db.sql_list("""
 			SELECT DISTINCT parent FROM `tabHas Role` WHERE role='Safety Officer'
 		""")
-		recipients_list = []
-		for u in safety_officers:
-			email = frappe.db.get_value("User", u, "email")
+		for user in safety_officers:
+			email = frappe.db.get_value("User", user, "email")
 			if email:
-				recipients_list.append(email)
+				recipients.add(email)
 
-	if not recipients_list:
-		# Fallback to Administrator or system managers
-		recipients_list = ["admin@example.com"]
+	return recipients or {"admin@example.com"}
 
-	target_date = add_days(today(), days)
-
-	# Find drivers whose license is expiring exactly `days` from now, or today
+def send_driver_license_reminders(recipients_list, target_date):
 	drivers = frappe.get_all(
 		"Driver",
 		filters={
-			"license_expiry_date": ["in", [target_date, today()]],
+			"license_expiry_date": ["<=", target_date],
 			"status": ["!=", "Suspended"]
 		},
 		fields=["name", "driver_name", "license_number", "license_expiry_date", "user"]
 	)
 
 	for driver in drivers:
+		status_text = "expired" if getdate(driver.license_expiry_date) < getdate(today()) else "expiring soon"
+		subject = f"Driver License {status_text.title()} Alert: {driver.driver_name}"
 		message = f"""
-		<h3>Driver License Expiry Reminder</h3>
-		<p>This is to inform you that the driver license for <b>{driver.driver_name}</b> is expiring or has expired.</p>
+		<h3>Driver License {status_text.title()} Reminder</h3>
+		<p>The driver license for <b>{driver.driver_name}</b> is {status_text}.</p>
 		<ul>
 			<li><b>Driver Name:</b> {driver.driver_name}</li>
 			<li><b>License/ID:</b> {driver.name}</li>
@@ -47,14 +38,53 @@ def send_license_expiry_reminders():
 			<li><b>Expiry Date:</b> {driver.license_expiry_date}</li>
 		</ul>
 		"""
-		subject = f"License Expiry Alert: {driver.driver_name}"
 
-		# Send to recipients
-		for email in recipients_list:
-			frappe.sendmail(recipients=email, subject=subject, message=message)
-
-		# Also send to linked driver user
+		recipients = set(recipients_list)
 		if driver.user:
 			user_email = frappe.db.get_value("User", driver.user, "email")
 			if user_email:
-				frappe.sendmail(recipients=user_email, subject=subject, message=message)
+				recipients.add(user_email)
+
+		frappe.sendmail(recipients=list(recipients), subject=subject, message=message)
+
+def send_vehicle_license_reminders(recipients_list, target_date):
+	vehicles = frappe.get_all(
+		"Vehicle",
+		filters={
+			"license_expiry_date": ["<=", target_date],
+			"status": ["!=", "Retired"]
+		},
+		fields=["name", "registration_number", "vehicle_name", "vehicle_type", "license_expiry_date", "reminder_email"]
+	)
+
+	for vehicle in vehicles:
+		status_text = "expired" if getdate(vehicle.license_expiry_date) < getdate(today()) else "expiring soon"
+		subject = f"Vehicle License {status_text.title()} Alert: {vehicle.registration_number}"
+		message = f"""
+		<h3>Vehicle License {status_text.title()} Reminder</h3>
+		<p>The vehicle license for <b>{vehicle.registration_number}</b> is {status_text}.</p>
+		<ul>
+			<li><b>Vehicle:</b> {vehicle.registration_number}</li>
+			<li><b>Vehicle Name / Model:</b> {vehicle.vehicle_name}</li>
+			<li><b>Vehicle Type:</b> {vehicle.vehicle_type}</li>
+			<li><b>Expiry Date:</b> {vehicle.license_expiry_date}</li>
+		</ul>
+		"""
+
+		recipients = set(recipients_list)
+		if vehicle.reminder_email:
+			recipients.add(vehicle.reminder_email)
+
+		frappe.sendmail(recipients=list(recipients), subject=subject, message=message)
+
+def send_license_expiry_reminders():
+	settings = frappe.get_single("TransitOps Settings")
+	if not settings.enable_license_reminders:
+		return
+
+	days = settings.license_reminder_days or 30
+	recipients_list = get_license_reminder_recipients(settings)
+	target_date = add_days(today(), days)
+
+	send_driver_license_reminders(recipients_list, target_date)
+	send_vehicle_license_reminders(recipients_list, target_date)

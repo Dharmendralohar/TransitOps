@@ -26,6 +26,8 @@
             <th v-if="hasFinancialAccess">Cost</th>
             <th>Status</th>
             <th>Region</th>
+            <th>License Expiry</th>
+            <th>Reminder Email</th>
             <th v-if="canManageVehicles">Actions</th>
           </tr>
         </thead>
@@ -43,6 +45,12 @@
               </span>
             </td>
             <td>{{ vehicle.region || '-' }}</td>
+            <td>
+              <span :class="{ 'text-danger': isExpired(vehicle.license_expiry_date) }">
+                {{ formatDate(vehicle.license_expiry_date) }}
+              </span>
+            </td>
+            <td>{{ vehicle.reminder_email || '-' }}</td>
             <td v-if="canManageVehicles">
               <div class="actions-cell">
                 <button class="btn-icon" @click="openEditModal(vehicle)" title="Edit">✏️</button>
@@ -52,7 +60,7 @@
             </td>
           </tr>
           <tr v-if="!vehicles.length">
-            <td colspan="9" class="no-data">No vehicles found in the fleet.</td>
+            <td colspan="11" class="no-data">No vehicles found in the fleet.</td>
           </tr>
         </tbody>
       </table>
@@ -121,6 +129,17 @@
                 </select>
               </div>
             </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label>License Expiry Date</label>
+                <input type="date" v-model="form.license_expiry_date" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label>Reminder Email</label>
+                <input type="email" v-model="form.reminder_email" class="form-control" placeholder="fleet@example.com" />
+              </div>
+            </div>
             
             <div class="modal-footer-form">
               <button type="button" class="btn btn-secondary" @click="closeModal">Cancel</button>
@@ -156,7 +175,9 @@ export default {
         odometer: 0,
         acquisition_cost: 0,
         status: 'Available',
-        region: ''
+        region: '',
+        license_expiry_date: '',
+        reminder_email: ''
       }
     }
   },
@@ -199,7 +220,9 @@ export default {
         odometer: 0,
         acquisition_cost: 5000,
         status: 'Available',
-        region: ''
+        region: '',
+        license_expiry_date: '',
+        reminder_email: ''
       }
       this.modalOpen = true
     },
@@ -289,6 +312,15 @@ export default {
     },
     formatCurrency(val) {
       return parseFloat(val || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })
+    },
+    formatDate(dateStr) {
+      if (!dateStr) return '-'
+      const date = new Date(dateStr)
+      return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+    },
+    isExpired(dateStr) {
+      if (!dateStr) return false
+      return new Date(dateStr) < new Date()
     },
     getStatusBadgeClass(status) {
       if (status === 'Available') return 'badge-success'

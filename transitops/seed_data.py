@@ -113,7 +113,9 @@ def seed():
 			"odometer": 125000,
 			"acquisition_cost": 85000,
 			"status": "Available",
-			"region": "North"
+			"region": "North",
+			"license_expiry_date": add_to_date(now_datetime(), days=45).strftime("%Y-%m-%d"),
+			"reminder_email": "fleet@transitops.local"
 		},
 		{
 			"registration_number": "MH-12-TC-0002",
@@ -123,7 +125,9 @@ def seed():
 			"odometer": 45000,
 			"acquisition_cost": 32000,
 			"status": "Available",
-			"region": "South"
+			"region": "South",
+			"license_expiry_date": add_to_date(now_datetime(), days=20).strftime("%Y-%m-%d"),
+			"reminder_email": "fleet@transitops.local"
 		}
 	]
 	
@@ -285,6 +289,8 @@ def seed_five_demo_sets():
 				"acquisition_cost": 6400000,
 				"status": "Available",
 				"region": "West",
+				"license_expiry_date": "2027-03-15",
+				"reminder_email": "west-fleet@transitops.local",
 			},
 			"trip": {
 				"source": "Pune Hub",
@@ -321,6 +327,8 @@ def seed_five_demo_sets():
 				"acquisition_cost": 1250000,
 				"status": "Available",
 				"region": "South",
+				"license_expiry_date": "2026-08-10",
+				"reminder_email": "south-fleet@transitops.local",
 			},
 			"trip": {
 				"source": "Bengaluru DC",
@@ -354,6 +362,8 @@ def seed_five_demo_sets():
 				"acquisition_cost": 3900000,
 				"status": "Available",
 				"region": "North",
+				"license_expiry_date": "2026-07-25",
+				"reminder_email": "north-fleet@transitops.local",
 			},
 			"trip": {
 				"source": "Delhi Depot",
@@ -390,6 +400,8 @@ def seed_five_demo_sets():
 				"acquisition_cost": 1750000,
 				"status": "Available",
 				"region": "West",
+				"license_expiry_date": "2027-11-20",
+				"reminder_email": "west-fleet@transitops.local",
 			},
 			"trip": {
 				"source": "Nashik Station",
@@ -422,6 +434,8 @@ def seed_five_demo_sets():
 				"acquisition_cost": 520000,
 				"status": "Available",
 				"region": "Central",
+				"license_expiry_date": "2026-07-18",
+				"reminder_email": "central-fleet@transitops.local",
 			},
 			"trip": {
 				"source": "Nagpur Micro Hub",

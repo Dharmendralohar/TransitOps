@@ -104,6 +104,8 @@ Important fields:
 | Acquisition Cost | Used for ROI reporting |
 | Status | `Available`, `On Trip`, `In Shop`, `Retired` |
 | Region | Operational region |
+| License Expiry Date | Vehicle license expiry date used by reminder emails |
+| Reminder Email | Vehicle-specific email recipient for license reminders |
 
 ### Driver
 
@@ -224,6 +226,8 @@ Other
 ### TransitOps Settings
 
 Stores system configuration such as license reminder settings, reminder days, and recipient emails.
+
+License reminders cover both Driver licenses and Vehicle license expiry dates. Reminder emails are sent to global reminder recipients, Safety Officers when global recipients are blank, and each Vehicle's own Reminder Email when provided.
 
 ## Backend APIs
 
@@ -369,6 +373,10 @@ Frappe Phone fields require a country code. Use:
 ```
 
 The current frontend automatically normalizes 10-digit local numbers to `+91...`.
+
+### Vehicle License Reminder Emails
+
+Set `License Expiry Date` and `Reminder Email` on a Vehicle. The daily scheduled job checks licenses that are expired or expiring within the configured reminder period in TransitOps Settings.
 
 ### Frontend Shows Login Or Empty Data
 

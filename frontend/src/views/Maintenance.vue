@@ -79,7 +79,7 @@
                 <select v-model="form.vehicle" class="form-control" required :disabled="isEdit">
                   <option value="">Select Vehicle</option>
                   <option v-for="v in vehicles" :key="v.name" :value="v.name">
-                    {{ v.name }} - {{ v.vehicle_name }}
+                    {{ v.name }} - {{ v.vehicle_name }} ({{ v.status }})
                   </option>
                 </select>
               </div>
@@ -227,7 +227,9 @@ export default {
     },
     async fetchVehicles() {
       try {
-        const response = await fetch('/api/resource/Vehicle?fields=["name","vehicle_name"]&limit_page_length=200')
+        const fields = encodeURIComponent(JSON.stringify(['name', 'vehicle_name', 'status']))
+        const filters = encodeURIComponent(JSON.stringify([['status', '=', 'Available']]))
+        const response = await fetch(`/api/resource/Vehicle?fields=${fields}&filters=${filters}&limit_page_length=200`)
         if (response.ok) {
           const res = await response.json()
           this.vehicles = res.data || []
@@ -276,7 +278,7 @@ export default {
 
         if (response.ok) {
           this.closeModal()
-          this.fetchLogs()
+          this.refreshMaintenanceContext()
         } else {
           const res = await response.json()
           this.errorMsg = res._server_messages 
@@ -314,7 +316,7 @@ export default {
 
         if (response.ok) {
           this.closeModalOpen = false
-          this.fetchLogs()
+          this.refreshMaintenanceContext()
         } else {
           const res = await response.json()
           alert(res._server_messages ? JSON.parse(res._server_messages).map(m => JSON.parse(m).message).join(', ') : 'Failed to close maintenance log.')
@@ -327,6 +329,10 @@ export default {
       if (!dateStr) return '-'
       const date = new Date(dateStr)
       return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+    },
+    refreshMaintenanceContext() {
+      this.fetchLogs()
+      this.fetchVehicles()
     },
     formatCurrency(val) {
       return parseFloat(val || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })

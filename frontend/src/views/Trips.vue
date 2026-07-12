@@ -107,7 +107,7 @@
                 <select v-model="form.vehicle" class="form-control" required>
                   <option value="">Select Vehicle</option>
                   <option v-for="v in vehicles" :key="v.name" :value="v.name">
-                    {{ v.name }} - {{ v.vehicle_name }} ({{ v.status }})
+                    {{ v.name }} - {{ v.vehicle_name }} ({{ v.max_load_capacity }} kg)
                   </option>
                 </select>
               </div>
@@ -168,6 +168,11 @@
             <div class="form-group mb-16">
               <label>Fuel Consumed (Liters)</label>
               <input type="number" v-model.number="completeForm.fuel_consumed" class="form-control" required min="0" step="0.01" />
+            </div>
+
+            <div class="form-group mb-16" v-if="hasFinancialAccess">
+              <label>Fuel Cost ($)</label>
+              <input type="number" v-model.number="completeForm.fuel_cost" class="form-control" required min="0" step="0.01" />
             </div>
 
             <div class="form-group mb-16" v-if="hasFinancialAccess">
@@ -241,6 +246,7 @@ export default {
       completeForm: {
         final_odometer: 0,
         fuel_consumed: 0,
+        fuel_cost: 0,
         revenue: 0
       },
       cancelForm: {
@@ -277,7 +283,9 @@ export default {
     },
     async fetchVehicles() {
       try {
-        const response = await fetch('/api/resource/Vehicle?fields=["name","vehicle_name","status"]&limit_page_length=200')
+        const fields = encodeURIComponent(JSON.stringify(['name', 'vehicle_name', 'status', 'max_load_capacity']))
+        const filters = encodeURIComponent(JSON.stringify([['status', '=', 'Available']]))
+        const response = await fetch(`/api/resource/Vehicle?fields=${fields}&filters=${filters}&limit_page_length=200`)
         if (response.ok) {
           const res = await response.json()
           this.vehicles = res.data || []
@@ -288,7 +296,9 @@ export default {
     },
     async fetchDrivers() {
       try {
-        const response = await fetch('/api/resource/Driver?fields=["name","driver_name","status"]&limit_page_length=200')
+        const fields = encodeURIComponent(JSON.stringify(['name', 'driver_name', 'status']))
+        const filters = encodeURIComponent(JSON.stringify([['status', '=', 'Available']]))
+        const response = await fetch(`/api/resource/Driver?fields=${fields}&filters=${filters}&limit_page_length=200`)
         if (response.ok) {
           const res = await response.json()
           this.drivers = res.data || []
@@ -321,6 +331,12 @@ export default {
     },
     async saveTrip() {
       try {
+        const selectedVehicle = this.vehicles.find(vehicle => vehicle.name === this.form.vehicle)
+        if (selectedVehicle && this.form.cargo_weight > selectedVehicle.max_load_capacity) {
+          this.errorMsg = `Cargo weight ${this.form.cargo_weight} kg exceeds ${selectedVehicle.name} capacity of ${selectedVehicle.max_load_capacity} kg.`
+          return
+        }
+
         const url = this.isEdit 
           ? `/api/resource/Trip/${encodeURIComponent(this.form.name)}`
           : '/api/resource/Trip'
@@ -337,7 +353,7 @@ export default {
 
         if (response.ok) {
           this.closeModal()
-          this.fetchTrips()
+          this.refreshTripContext()
         } else {
           const res = await response.json()
           this.errorMsg = res._server_messages 
@@ -360,7 +376,7 @@ export default {
         })
 
         if (response.ok) {
-          this.fetchTrips()
+          this.refreshTripContext()
         } else {
           const res = await response.json()
           alert(res._server_messages ? JSON.parse(res._server_messages).map(m => JSON.parse(m).message).join(', ') : 'Dispatch failed.')
@@ -374,6 +390,7 @@ export default {
       this.completeForm = {
         final_odometer: trip.starting_odometer || 0,
         fuel_consumed: 0,
+        fuel_cost: 0,
         revenue: 0
       }
       this.completeModalOpen = true
@@ -390,13 +407,14 @@ export default {
             trip_name: this.selectedTrip.name,
             final_odometer: this.completeForm.final_odometer,
             fuel_consumed: this.completeForm.fuel_consumed,
+            fuel_cost: this.completeForm.fuel_cost,
             revenue: this.completeForm.revenue
           })
         })
 
         if (response.ok) {
           this.completeModalOpen = false
-          this.fetchTrips()
+          this.refreshTripContext()
         } else {
           const res = await response.json()
           alert(res._server_messages ? JSON.parse(res._server_messages).map(m => JSON.parse(m).message).join(', ') : 'Completion failed.')
@@ -428,7 +446,7 @@ export default {
 
         if (response.ok) {
           this.cancelModalOpen = false
-          this.fetchTrips()
+          this.refreshTripContext()
         } else {
           const res = await response.json()
           alert(res._server_messages ? JSON.parse(res._server_messages).map(m => JSON.parse(m).message).join(', ') : 'Cancellation failed.')
@@ -441,6 +459,11 @@ export default {
       if (!dtStr) return '-'
       const date = new Date(dtStr)
       return date.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    },
+    refreshTripContext() {
+      this.fetchTrips()
+      this.fetchVehicles()
+      this.fetchDrivers()
     },
     formatCurrency(val) {
       return parseFloat(val || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })

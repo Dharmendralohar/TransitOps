@@ -62,9 +62,9 @@
         <div class="form-group mb-24">
           <label class="checkbox-label">
             <input type="checkbox" v-model="settings.enable_license_reminders" :disabled="!canManageSettings" />
-            <span class="checkbox-text">Enable Driver License Expiry Reminders</span>
+            <span class="checkbox-text">Enable Driver & Vehicle License Expiry Reminders</span>
           </label>
-          <p class="help-text">When checked, the system will run a daily background check and email alerts for drivers with upcoming license expiries.</p>
+          <p class="help-text">When checked, the system will run a daily background check and email alerts for drivers and vehicles with upcoming or expired licenses.</p>
         </div>
 
         <div class="form-group mb-24" v-if="settings.enable_license_reminders">

@@ -1,5 +1,6 @@
 import frappe
 from frappe.model.document import Document
+from frappe.utils import getdate, nowdate
 
 class Vehicle(Document):
 	def validate(self):
@@ -9,6 +10,8 @@ class Vehicle(Document):
 			frappe.throw("Odometer cannot be negative.")
 		if self.acquisition_cost < 0:
 			frappe.throw("Acquisition Cost cannot be negative.")
+		if self.license_expiry_date and getdate(self.license_expiry_date) < getdate(nowdate()):
+			frappe.msgprint(f"Vehicle license for {self.name or self.registration_number} is expired.", alert=True, indicator="orange")
 
 		# Check status change rules
 		db_doc = self.get_doc_before_save()

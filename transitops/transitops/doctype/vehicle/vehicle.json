@@ -15,6 +15,8 @@
   "acquisition_cost",
   "status",
   "region",
+  "license_expiry_date",
+  "reminder_email",
   "rc_document",
   "insurance_document",
   "permit_document"
@@ -78,6 +80,19 @@
    "label": "Region",
    "in_list_view": 1,
    "in_standard_filter": 1
+  },
+  {
+   "fieldname": "license_expiry_date",
+   "fieldtype": "Date",
+   "label": "License Expiry Date",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "reminder_email",
+   "fieldtype": "Data",
+   "label": "Reminder Email",
+   "options": "Email"
   },
   {
    "fieldname": "rc_document",
