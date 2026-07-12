@@ -59,10 +59,13 @@
               <div class="user-role">{{ getDisplayRole() }}</div>
             </div>
           </div>
-          <div class="desk-link-container">
+          <div class="desk-link-container" style="display: flex; flex-direction: column; gap: 8px;">
             <a href="/app" class="desk-link">
               <span class="nav-icon">🖥️</span> Go to Desk
             </a>
+            <button @click="handleLogout" class="logout-link">
+              <span class="nav-icon">🚪</span> Logout
+            </button>
           </div>
         </div>
       </aside>
@@ -122,6 +125,9 @@ export default {
             if (res.message.csrf_token) {
               window.csrf_token = res.message.csrf_token
             }
+            if (!res.message.authenticated) {
+              window.location.href = '/login?redirect-to=/transitops';
+            }
           }
         }
       } catch (err) {
@@ -139,6 +145,19 @@ export default {
       if (roles.includes('Driver')) return 'Driver'
       if (roles.includes('System Manager')) return 'System Manager'
       return roles[0] || 'User'
+    },
+    async handleLogout() {
+      try {
+        await fetch('/api/method/logout', {
+          method: 'POST',
+          headers: {
+            'X-Frappe-CSRF-Token': window.csrf_token
+          }
+        });
+        window.location.href = '/login?redirect-to=/transitops';
+      } catch (err) {
+        console.error('Logout failed:', err);
+      }
     }
   }
 }
@@ -622,5 +641,26 @@ body, html {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+.logout-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  background-color: #3f1e1e;
+  border: 1px solid #7f1d1d;
+  color: #fca5a5;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logout-link:hover {
+  background-color: #7f1d1d;
+  color: #ffffff;
 }
 </style>
